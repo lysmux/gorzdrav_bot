@@ -7,6 +7,8 @@ from aiogram.fsm.storage.redis import RedisStorage
 from redis.asyncio import Redis
 
 from config import Config
+from handlers import common, gorzdrav
+from services.set_bot_commands import set_bot_commands
 
 logging.basicConfig(
     level=logging.INFO,
@@ -34,7 +36,13 @@ async def main():
     bot = Bot(token=config.bot.token)
     dp = Dispatcher(storage=storage)
 
-    # start
+    dp.include_routers(
+        common.router,
+        gorzdrav.router
+    )
+
+    await set_bot_commands(bot)
+
     try:
         await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(bot)
