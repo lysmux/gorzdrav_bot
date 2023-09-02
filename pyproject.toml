@@ -8,6 +8,8 @@ packages = [{include = "gorzdrav_bot"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+aiogram = "^3.0.0"
+redis = "^5.0.0"
 
 
 [build-system]
