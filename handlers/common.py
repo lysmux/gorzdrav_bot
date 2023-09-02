@@ -1,5 +1,3 @@
-from idlelib.undo import CommandSequence
-
 from aiogram import Router, types
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext

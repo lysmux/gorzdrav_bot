@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from utils.datetime_to_str import datetime_to_str
+
 
 @dataclass
 class BaseItem:
@@ -29,6 +31,8 @@ class Doctor(BaseItem):
 
 
 @dataclass
-class Appointment:
-    id: str
+class Appointment(BaseItem):
     datetime: datetime
+
+    def __post_init__(self):
+        self.name = datetime_to_str(self.datetime)

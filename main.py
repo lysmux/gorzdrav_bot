@@ -37,8 +37,8 @@ async def main():
     dp = Dispatcher(storage=storage)
 
     dp.include_routers(
+        gorzdrav.router,
         common.router,
-        gorzdrav.router
     )
 
     await set_bot_commands(bot)
