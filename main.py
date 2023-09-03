@@ -7,7 +7,9 @@ from aiogram.fsm.storage.redis import RedisStorage
 from redis.asyncio import Redis
 
 from config import Config
-from handlers import common, gorzdrav
+from handlers import common, gorzdrav, profile
+from middlewares.database import DatabaseMiddleware
+from services.database import create_db_pool
 from services.set_bot_commands import set_bot_commands
 
 logging.basicConfig(
@@ -25,21 +27,24 @@ async def main():
         storage = RedisStorage(Redis())
     else:
         storage = MemoryStorage()
-    # pool = await create_pool(
-    #     host=config.db.host,
-    #     port=config.db.port,
-    #     user=config.db.user,
-    #     password=config.db.password,
-    #     database=config.db.database,
-    # )
+
+    database_pool = await create_db_pool(
+        host=config.db.host,
+        user=config.db.user,
+        password=config.db.password,
+        database=config.db.database,
+    )
 
     bot = Bot(token=config.bot.token)
     dp = Dispatcher(storage=storage)
 
     dp.include_routers(
+        profile.router,
         gorzdrav.router,
         common.router,
     )
+    dp.message.middleware(DatabaseMiddleware(database_pool))
+    dp.callback_query.middleware(DatabaseMiddleware(database_pool))
 
     await set_bot_commands(bot)
 

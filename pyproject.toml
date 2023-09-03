@@ -10,6 +10,8 @@ packages = [{include = "gorzdrav_bot"}]
 python = "^3.10"
 aiogram = "^3.0.0"
 redis = "^5.0.0"
+sqlalchemy = "^2.0.20"
+asyncpg = "^0.28.0"
 
 
 [build-system]

@@ -4,7 +4,6 @@ use_redis:
 
 [database]
 host:
-port:
 user:
 password:
 database:
