@@ -3,9 +3,9 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
 import bot_asnwers
-from keyboards.reply.appointment import generate_keyboard
+from gorzdrav.keyboards.reply import generate_keyboard
+from gorzdrav.states import AppointmentStates
 from services import gorzdrav_api
-from states.appointment import AppointmentStates
 
 router = Router()
 

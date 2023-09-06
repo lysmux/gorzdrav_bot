@@ -6,8 +6,10 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage
 from redis.asyncio import Redis
 
+import common
+import gorzdrav
+import profile
 from config import Config
-from handlers import common, gorzdrav, profile
 from middlewares.database import DatabaseMiddleware
 from services.database import create_db_pool
 from services.set_bot_commands import set_bot_commands
