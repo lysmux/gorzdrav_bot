@@ -12,6 +12,6 @@ class GorZdravAPIMiddleware(BaseMiddleware):
                        event: TelegramObject,
                        data: Dict[str, Any]
                        ) -> Any:
-        async with GorZdravAPI() as session:
-            data["gorzdrav_api"] = session
+        async with GorZdravAPI() as api:
+            data["gorzdrav_api"] = api
             return await handler(event, data)

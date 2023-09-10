@@ -57,6 +57,7 @@ class GorZdravAPI:
         ta = TypeAdapter(response_model)
         return cast(response_model, ta.validate_python(deserialized_data["result"]))
 
+    @cache.soft(ttl="24h", soft_ttl="3h")
     async def get_districts(self) -> list[District]:
         return await self.make_request(
             method="GET",
@@ -64,6 +65,7 @@ class GorZdravAPI:
             response_model=list[District]
         )
 
+    @cache.soft(ttl="24h", soft_ttl="3h")
     async def get_clinics(self, district: District) -> list[Clinic]:
         return await self.make_request(
             method="GET",
@@ -71,6 +73,7 @@ class GorZdravAPI:
             response_model=list[Clinic]
         )
 
+    @cache.soft(ttl="24h", soft_ttl="3h")
     async def get_specialities(self, clinic: Clinic) -> list[Speciality]:
         return await self.make_request(
             method="GET",

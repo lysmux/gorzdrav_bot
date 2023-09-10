@@ -10,25 +10,24 @@ class District(BaseModel):
 
 class Clinic(BaseModel):
     id: int
-    full_name: str = Field(..., alias="lpuFullName")
-    short_name: str = Field(..., alias="lpuShortName")
     address: str
+    full_name: str = Field(alias="lpuFullName")
+    short_name: str = Field(alias="lpuShortName")
 
 
 class Speciality(BaseModel):
     id: int
     name: str
-    free_appointments: int = Field(..., alias="countFreeParticipant")
 
 
 class Doctor(BaseModel):
     id: int
     name: str
-    free_appointments: int = Field(..., alias="freeParticipantCount")
-    nearest_appointment: datetime = Field(..., alias="nearestDate")
-    room: str = Field(..., alias="comment")
+    free_appointments: int = Field(alias="freeParticipantCount")
+    nearest_appointment: datetime = Field(alias="nearestDate")
 
 
 class Appointment(BaseModel):
     id: int
-    time: datetime = Field(..., alias="visitStart")
+    room: str
+    time: datetime = Field(alias="visitStart")
