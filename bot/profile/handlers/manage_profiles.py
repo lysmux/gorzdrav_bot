@@ -7,7 +7,7 @@ from bot import bot_asnwers
 from bot.profile.keyboards.inline import ConfirmCallback, confirm_keyboard, DeleteProfileCallback, action_keyboard
 from bot.profile.keyboards.reply import generate_profiles_keyboard
 from bot.profile.states import ProfileActionStates
-from services.database import Repository
+from database.database import Repository
 
 router = Router()
 router.callback_query.middleware(CallbackAnswerMiddleware(pre=True))

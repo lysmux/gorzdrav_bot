@@ -4,9 +4,11 @@ from aiohttp import ClientSession, client_exceptions, ContentTypeError
 from cashews import cache
 from pydantic import BaseModel, TypeAdapter
 
-from models.gorzdrav import District, Clinic, Speciality, Doctor, Appointment
+from gorzdrav_api.exceptions import ServerError, ResponseParseError
+from gorzdrav_api.shemas import District, Clinic, Speciality, Doctor, Appointment
 
 cache.setup("mem://")
+
 P = TypeVar("P", bound=BaseModel)
 
 
@@ -37,18 +39,18 @@ class GorZdravAPI:
                 ssl=False,
             )
         except (client_exceptions.ClientConnectionError, client_exceptions.ClientConnectorError) as e:
-            raise ConnectionError(f"Connection error, details: {e}")
+            raise ServerError(f"Connection error, details: {e}")
 
         if response.status != 200:
             details = await response.text()
-            raise ConnectionError(
+            raise ServerError(
                 f"Server returned {response.status}, details: {details}"
             )
 
         try:
             deserialized_data = await response.json()
         except ContentTypeError as e:
-            raise ValueError(
+            raise ResponseParseError(
                 e.message,
             )
 

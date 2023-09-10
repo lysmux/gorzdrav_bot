@@ -256,6 +256,24 @@ tests = ["attrs[tests-no-zope]", "zope-interface"]
 tests-no-zope = ["cloudpickle", "hypothesis", "mypy (>=1.1.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 
 [[package]]
+name = "cashews"
+version = "6.2.0"
+description = "cache tools with async power"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "cashews-6.2.0-py3-none-any.whl", hash = "sha256:8a005fdb429efad8a99e2d8c3024a0a59bed35d49fe67da35a2cd9cb1d56cd89"},
+    {file = "cashews-6.2.0.tar.gz", hash = "sha256:c197202336d1bfde732bf43c30c8fd3fdb5836700e8a81bdd25abcc5ea1df9c8"},
+]
+
+[package.extras]
+dill = ["dill"]
+diskcache = ["diskcache (>=5.0.0)"]
+redis = ["redis (>=4.3.1)"]
+speedup = ["bitarray (<3.0.0)", "hiredis", "xxhash (<4.0.0)"]
+tests = ["hypothesis", "pytest", "pytest-asyncio"]
+
+[[package]]
 name = "certifi"
 version = "2023.7.22"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -939,4 +957,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a9a0600762a51f57d7f10a3de05034ebd59618c310a9a4733da3b8f7d33674f7"
+content-hash = "96315132cf75425384d66af3216e8797f6af5568f57608cfa0b2f60babb0093a"

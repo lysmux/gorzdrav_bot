@@ -3,7 +3,7 @@ from typing import List
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 from bot import bot_asnwers
-from models.sqlalchemy.profile import Profile
+from database.models.profile import Profile
 
 
 def generate_profiles_keyboard(profiles: List[Profile]):

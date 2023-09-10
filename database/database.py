@@ -3,8 +3,8 @@ import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from models.sqlalchemy.base import Base
-from models.sqlalchemy.profile import Profile
+from database.models.base import Base
+from database.models.profile import Profile
 
 
 async def create_db_pool(host: str, user: str, password: str, database: str):

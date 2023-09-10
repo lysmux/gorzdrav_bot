@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Text, Integer, Date
 
-from models.sqlalchemy.base import Base
+from database.models.base import Base
 
 
 class Profile(Base):

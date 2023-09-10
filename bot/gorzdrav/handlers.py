@@ -5,13 +5,16 @@ from aiogram.fsm.context import FSMContext
 from bot import bot_asnwers
 from bot.gorzdrav.keyboards.reply import generate_keyboard
 from bot.gorzdrav.states import AppointmentStates
-from services import gorzdrav_api
+from bot.middlewares.gorzdrav_api import GorZdravAPIMiddleware
+from gorzdrav_api.api import GorZdravAPI
 
 router = Router()
+router.message.middleware(GorZdravAPIMiddleware())
+router.callback_query.middleware(GorZdravAPIMiddleware())
 
 
 @router.message(Command("make_appointment"))
-async def make_appointment_handler(message: types.Message, state: FSMContext):
+async def make_appointment_handler(message: types.Message, state: FSMContext, gorzdrav_api: GorZdravAPI):
     districts = await gorzdrav_api.get_districts()
     keyboard = generate_keyboard(districts)
 
@@ -21,7 +24,7 @@ async def make_appointment_handler(message: types.Message, state: FSMContext):
 
 
 @router.message(AppointmentStates.district)
-async def district_handler(message: types.Message, state: FSMContext):
+async def district_handler(message: types.Message, state: FSMContext, gorzdrav_api: GorZdravAPI):
     districts = (await state.get_data())["districts"]
     selected_district = next(filter(lambda x: x.name == message.text, districts), None)
 
@@ -36,7 +39,7 @@ async def district_handler(message: types.Message, state: FSMContext):
 
 
 @router.message(AppointmentStates.clinic)
-async def clinic_handler(message: types.Message, state: FSMContext):
+async def clinic_handler(message: types.Message, state: FSMContext, gorzdrav_api: GorZdravAPI):
     clinics = (await state.get_data())["clinics"]
     selected_clinic = next(filter(lambda x: x.name == message.text, clinics), None)
 
@@ -51,7 +54,7 @@ async def clinic_handler(message: types.Message, state: FSMContext):
 
 
 @router.message(AppointmentStates.speciality)
-async def speciality_handler(message: types.Message, state: FSMContext):
+async def speciality_handler(message: types.Message, state: FSMContext, gorzdrav_api: GorZdravAPI):
     state_data = await state.get_data()
     specialities = state_data["specialities"]
     selected_clinic = state_data["selected_clinic"]
@@ -68,7 +71,7 @@ async def speciality_handler(message: types.Message, state: FSMContext):
 
 
 @router.message(AppointmentStates.doctor)
-async def doctor_handler(message: types.Message, state: FSMContext):
+async def doctor_handler(message: types.Message, state: FSMContext, gorzdrav_api: GorZdravAPI):
     state_data = await state.get_data()
     doctors = state_data["doctors"]
     selected_clinic = state_data["selected_clinic"]

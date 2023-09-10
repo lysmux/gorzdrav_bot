@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 
 from bot import bot_asnwers
 from bot.profile.states import ProfileStates
-from services.database import Repository
+from database.database import Repository
 
 router = Router()
 

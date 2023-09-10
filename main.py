@@ -10,7 +10,7 @@ from bot import common, gorzdrav, profile
 from bot.middlewares.database import DatabaseMiddleware
 from bot.services.set_bot_commands import set_bot_commands
 from config import Config
-from services.database import create_db_pool
+from database.database import create_db_pool
 
 logging.basicConfig(
     level=logging.INFO,

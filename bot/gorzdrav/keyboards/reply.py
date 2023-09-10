@@ -1,9 +1,8 @@
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from pydantic import BaseModel
 
-from models.gorzdrav import BaseItem
 
-
-def generate_keyboard(items: list[BaseItem]):
+def generate_keyboard(items: list[BaseModel]):
     keyboard = ReplyKeyboardBuilder()
 
     for item in items:
