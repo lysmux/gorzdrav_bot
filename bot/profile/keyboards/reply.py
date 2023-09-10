@@ -2,7 +2,7 @@ from typing import List
 
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
-import bot_asnwers
+from bot import bot_asnwers
 from models.sqlalchemy.profile import Profile
 
 

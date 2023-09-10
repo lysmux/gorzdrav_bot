@@ -3,10 +3,10 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 
-import bot_asnwers
-from profile.keyboards.inline import ConfirmCallback, confirm_keyboard, DeleteProfileCallback, action_keyboard
-from profile.keyboards.reply import generate_profiles_keyboard
-from profile.states import ProfileActionStates
+from bot import bot_asnwers
+from bot.profile.keyboards.inline import ConfirmCallback, confirm_keyboard, DeleteProfileCallback, action_keyboard
+from bot.profile.keyboards.reply import generate_profiles_keyboard
+from bot.profile.states import ProfileActionStates
 from services.database import Repository
 
 router = Router()

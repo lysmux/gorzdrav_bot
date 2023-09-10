@@ -1,7 +1,7 @@
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-import bot_asnwers
+from bot import bot_asnwers
 
 
 class DeleteProfileCallback(CallbackData, prefix="delete_profile"):

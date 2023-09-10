@@ -6,13 +6,11 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage
 from redis.asyncio import Redis
 
-import common
-import gorzdrav
-import profile
+from bot import common, gorzdrav, profile
+from bot.middlewares.database import DatabaseMiddleware
+from bot.services.set_bot_commands import set_bot_commands
 from config import Config
-from middlewares.database import DatabaseMiddleware
 from services.database import create_db_pool
-from services.set_bot_commands import set_bot_commands
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 
 async def main():
-    logger.info("Starting bot")
     config = Config.load_config("bot.ini")
 
     if config.bot.use_redis:
@@ -60,6 +57,7 @@ async def main():
 
 if __name__ == "__main__":
     try:
+        logger.info("Starting bot")
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger.info("Bot stopped!")

@@ -4,8 +4,8 @@ from aiogram import types, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
-import bot_asnwers
-from profile.states import ProfileStates
+from bot import bot_asnwers
+from bot.profile.states import ProfileStates
 from services.database import Repository
 
 router = Router()
