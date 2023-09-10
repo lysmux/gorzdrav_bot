@@ -1,38 +1,34 @@
-from dataclasses import dataclass
 from datetime import datetime
 
-from utils.datetime_to_str import datetime_to_str
+from pydantic import BaseModel, Field
 
 
-@dataclass
-class BaseItem:
-    id: str
+class District(BaseModel):
+    id: int
     name: str
 
 
-@dataclass
-class District(BaseItem):
-    pass
+class Clinic(BaseModel):
+    id: int
+    full_name: str = Field(..., alias="lpuFullName")
+    short_name: str = Field(..., alias="lpuShortName")
+    address: str
 
 
-@dataclass
-class Clinic(BaseItem):
-    pass
+class Speciality(BaseModel):
+    id: int
+    name: str
+    free_appointments: int = Field(..., alias="countFreeParticipant")
 
 
-@dataclass
-class Speciality(BaseItem):
-    pass
+class Doctor(BaseModel):
+    id: int
+    name: str
+    free_appointments: int = Field(..., alias="freeParticipantCount")
+    nearest_appointment: datetime = Field(..., alias="nearestDate")
+    room: str = Field(..., alias="comment")
 
 
-@dataclass
-class Doctor(BaseItem):
-    pass
-
-
-@dataclass
-class Appointment(BaseItem):
-    datetime: datetime
-
-    def __post_init__(self):
-        self.name = datetime_to_str(self.datetime)
+class Appointment(BaseModel):
+    id: int
+    time: datetime = Field(..., alias="visitStart")
