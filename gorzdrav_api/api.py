@@ -5,7 +5,7 @@ from cashews import cache
 from pydantic import BaseModel, TypeAdapter
 
 from gorzdrav_api.exceptions import ServerError, ResponseParseError
-from gorzdrav_api.shemas import District, Clinic, Speciality, Doctor, Appointment
+from gorzdrav_api.schemas import District, Clinic, Speciality, Doctor, Appointment
 
 cache.setup("mem://")
 
