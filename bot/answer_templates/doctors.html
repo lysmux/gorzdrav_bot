@@ -1,0 +1,5 @@
+<b>‍🧑‍⚕️ Выбери врача</b>
+{% for doctor in doctors %}
+<b>‍🧑‍⚕️ {{ doctor.name }}</b> - доступных талонов: {{ doctor.free_appointments }}
+Ближайший талон на {{ doctor.nearest_appointment }}
+{% endfor %}

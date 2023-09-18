@@ -2,13 +2,14 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage
 from redis.asyncio import Redis
 
 from bot import common, gorzdrav, profile
 from bot.middlewares.database import DatabaseMiddleware
-from bot.services.set_bot_commands import set_bot_commands
+from bot.utils.set_bot_commands import set_bot_commands
 from config import Config
 from database.database import create_db_pool
 
@@ -34,7 +35,7 @@ async def main():
         database=config.db.database,
     )
 
-    bot = Bot(token=config.bot.token)
+    bot = Bot(token=config.bot.token, parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=storage)
 
     dp.include_routers(
