@@ -1,4 +1,4 @@
-from typing import Union, Optional, TypeVar, cast
+from typing import TypeVar, cast
 
 from aiohttp import ClientSession, client_exceptions, ContentTypeError
 from cashews import cache
@@ -27,9 +27,9 @@ class GorZdravAPI:
             self,
             method: str,
             url_part: str,
-            response_model: type[Union[list[BaseModel], BaseModel]],
-            params: Optional[dict[str, str]] = None,
-    ) -> Union[P, list[P]]:
+            response_model: type[list[BaseModel] | BaseModel],
+            params: dict[str, str] | None = None,
+    ) -> P | list[P] | None:
         try:
             response = await self._http_client.request(
                 method,
@@ -43,9 +43,7 @@ class GorZdravAPI:
 
         if response.status != 200:
             details = await response.text()
-            raise ServerError(
-                f"Server returned {response.status}, details: {details}"
-            )
+            raise ServerError(f"Server returned {response.status}, details: {details}")
 
         try:
             deserialized_data = await response.json()
@@ -54,8 +52,11 @@ class GorZdravAPI:
                 e.message,
             )
 
-        ta = TypeAdapter(response_model)
-        return cast(response_model, ta.validate_python(deserialized_data["result"]))
+        if deserialized_data["success"]:
+            ta = TypeAdapter(response_model)
+            return cast(response_model, ta.validate_python(deserialized_data["result"]))
+        else:
+            return None
 
     @cache.soft(ttl="24h", soft_ttl="3h")
     async def get_districts(self) -> list[District]:
