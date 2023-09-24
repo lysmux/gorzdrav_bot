@@ -2,7 +2,7 @@ from aiogram import Router, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
-from bot.gorzdrav.keyboards import reply
+from bot.gorzdrav.keyboards import reply, inline
 from bot.gorzdrav.states import AppointmentStates
 from bot.middlewares.gorzdrav_api import GorZdravAPIMiddleware
 from bot.utils.template_engine import render_template
@@ -67,3 +67,25 @@ async def speciality_handler(message: types.Message, state: FSMContext, gorzdrav
         await message.answer(text=render_template("doctors.html", doctors=doctors), reply_markup=keyboard)
     else:
         await message.answer(text=render_template("unknown_speciality.html", speciality=message.text))
+
+
+@router.message(AppointmentStates.doctor)
+async def doctor_handler(message: types.Message, state: FSMContext, gorzdrav_api: GorZdravAPI):
+    state_data = await state.get_data()
+    doctors = state_data["doctors"]
+    selected_clinic = state_data["selected_clinic"]
+    selected_doctor = next(filter(lambda x: x.name == message.text, doctors), None)
+
+    if selected_doctor:
+        appointments = await gorzdrav_api.get_appointments(selected_clinic, selected_doctor)
+        if appointments:
+            keyboard = reply.appointments_keyboard_factory(appointments)
+            await state.update_data(appointments=appointments, selected_doctor=selected_doctor)
+            await message.answer(text=render_template("appointments.html", doctors=doctors), reply_markup=keyboard)
+
+        action_keyboard = inline.monitor_keyboard_factory()
+        await message.answer(text=render_template("add_tracking.html", no_appointments=not bool(appointments)),
+                             reply_markup=action_keyboard)
+        await state.set_state(AppointmentStates.appointment)
+    else:
+        await message.answer(text=render_template("unknown_doctor.html", doctor=message.text))

@@ -1,6 +1,6 @@
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
-from gorzdrav_api.schemas import District, Clinic, Speciality, Doctor
+from gorzdrav_api.schemas import District, Clinic, Speciality, Doctor, Appointment
 
 
 def districts_keyboard_factory(districts: list[District]):
@@ -41,6 +41,17 @@ def doctors_keyboard_factory(doctors: list[Doctor]):
 
     for doctor in doctors:
         keyboard.button(text=doctor.name)
+
+    keyboard.adjust(2, repeat=True)
+
+    return keyboard.as_markup()
+
+
+def appointments_keyboard_factory(appointments: list[Appointment]):
+    keyboard = ReplyKeyboardBuilder()
+
+    for appointment in appointments:
+        keyboard.button(text=appointment.time.strftime("%d.%m.%Y в %H:%M"))
 
     keyboard.adjust(2, repeat=True)
 
