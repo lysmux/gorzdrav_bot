@@ -1,7 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field, field_validator
-from urllib.parse import quote
+from pydantic import BaseModel, Field, computed_field
 
 
 class District(BaseModel):
@@ -20,12 +19,6 @@ class Speciality(BaseModel):
     id: str
     name: str
 
-    # noinspection PyMethodParameters
-    @field_validator("id")
-    def id_fix(cls, value: str):
-        value = quote(value, safe="")
-        return value
-
 
 class Doctor(BaseModel):
     id: str
@@ -38,3 +31,8 @@ class Appointment(BaseModel):
     id: str
     room: str
     time: datetime = Field(alias="visitStart")
+
+    @computed_field
+    @property
+    def time_str(self) -> str:
+        return self.time.strftime("%d.%m.%Y в %H:%M")

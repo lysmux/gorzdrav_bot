@@ -1,4 +1,5 @@
 from typing import TypeVar, cast
+from urllib.parse import quote
 
 from aiohttp import ClientSession, client_exceptions, ContentTypeError
 from cashews import cache
@@ -83,9 +84,11 @@ class GorZdravAPI:
         )
 
     async def get_doctors(self, clinic: Clinic, speciality: Speciality) -> list[Doctor]:
+        speciality_id = quote(speciality.id, safe="")
+
         return await self.make_request(
             method="GET",
-            url_part=f"schedule/lpu/{clinic.id}/speciality/{speciality.id}/doctors",
+            url_part=f"schedule/lpu/{clinic.id}/speciality/{speciality_id}/doctors",
             response_model=list[Doctor]
         )
 

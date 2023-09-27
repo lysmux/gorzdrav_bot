@@ -51,7 +51,7 @@ def appointments_keyboard_factory(appointments: list[Appointment]):
     keyboard = ReplyKeyboardBuilder()
 
     for appointment in appointments:
-        keyboard.button(text=appointment.time.strftime("%d.%m.%Y в %H:%M"))
+        keyboard.button(text=appointment.time_str)
 
     keyboard.adjust(2, repeat=True)
 
