@@ -1,6 +1,4 @@
 <b>Выбери врача</b>
 {% for doctor in doctors %}
 <b>‍🧑‍⚕️ {{ doctor.name }}</b> - доступных талонов: <b>{{ doctor.free_appointments }}</b>
-{%- if doctor.nearest_appointment %} Ближайший талон на <b>{{ doctor.nearest_appointment.strftime("%d.%m.%Y в %H:%M")}} </b>
-{%- endif %}
 {% endfor %}

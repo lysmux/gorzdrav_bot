@@ -19,7 +19,7 @@ async def make_appointment_handler(message: types.Message, state: FSMContext, go
 
     await state.set_state(AppointmentStates.district)
     await state.update_data(districts=districts)
-    await message.answer(text=render_template("districts.html"), reply_markup=keyboard)
+    await message.answer(text=render_template("info/districts.html"), reply_markup=keyboard)
 
 
 @router.message(AppointmentStates.district)
@@ -32,9 +32,9 @@ async def district_handler(message: types.Message, state: FSMContext, gorzdrav_a
         keyboard = reply.clinics_keyboard_factory(clinics)
         await state.set_state(AppointmentStates.clinic)
         await state.update_data(clinics=clinics, selected_district=selected_district)
-        await message.answer(text=render_template("clinics.html", clinics=clinics), reply_markup=keyboard)
+        await message.answer(text=render_template("info/clinics.html", clinics=clinics), reply_markup=keyboard)
     else:
-        await message.answer(text=render_template("unknown_district.html", district=message.text))
+        await message.answer(text=render_template("errors/unknown_district.html", district=message.text))
 
 
 @router.message(AppointmentStates.clinic)
@@ -47,9 +47,9 @@ async def clinic_handler(message: types.Message, state: FSMContext, gorzdrav_api
         keyboard = reply.specialities_keyboard_factory(specialities)
         await state.set_state(AppointmentStates.speciality)
         await state.update_data(specialities=specialities, selected_clinic=selected_clinic)
-        await message.answer(text=render_template("specialities.html"), reply_markup=keyboard)
+        await message.answer(text=render_template("info/specialities.html"), reply_markup=keyboard)
     else:
-        await message.answer(text=render_template("unknown_clinic.html", clinic=message.text))
+        await message.answer(text=render_template("errors/unknown_clinic.html", clinic=message.text))
 
 
 @router.message(AppointmentStates.speciality)
@@ -64,9 +64,9 @@ async def speciality_handler(message: types.Message, state: FSMContext, gorzdrav
         keyboard = reply.doctors_keyboard_factory(doctors)
         await state.set_state(AppointmentStates.doctor)
         await state.update_data(doctors=doctors, selected_speciality=selected_speciality)
-        await message.answer(text=render_template("doctors.html", doctors=doctors), reply_markup=keyboard)
+        await message.answer(text=render_template("info/doctors.html", doctors=doctors), reply_markup=keyboard)
     else:
-        await message.answer(text=render_template("unknown_speciality.html", speciality=message.text))
+        await message.answer(text=render_template("errors/unknown_speciality.html", speciality=message.text))
 
 
 @router.message(AppointmentStates.doctor)
@@ -80,12 +80,14 @@ async def doctor_handler(message: types.Message, state: FSMContext, gorzdrav_api
         appointments = await gorzdrav_api.get_appointments(selected_clinic, selected_doctor)
         if appointments:
             keyboard = reply.appointments_keyboard_factory(appointments)
-            await state.update_data(appointments=appointments, selected_doctor=selected_doctor)
-            await message.answer(text=render_template("appointments.html", doctors=doctors), reply_markup=keyboard)
+            await state.update_data(appointments=appointments)
+            await message.answer(text=render_template("info/appointments.html", doctors=doctors),
+                                 reply_markup=keyboard)
 
         action_keyboard = inline.monitor_keyboard_factory()
-        await message.answer(text=render_template("add_tracking.html", no_appointments=not bool(appointments)),
+        await message.answer(text=render_template("info/add_tracking.html", no_appointments=not bool(appointments)),
                              reply_markup=action_keyboard)
+        await state.update_data(selected_doctor=selected_doctor)
         await state.set_state(AppointmentStates.appointment)
     else:
-        await message.answer(text=render_template("unknown_doctor.html", doctor=message.text))
+        await message.answer(text=render_template("errors/unknown_doctor.html", doctor=message.text))

@@ -24,7 +24,6 @@ class Doctor(BaseModel):
     id: str
     name: str
     free_appointments: int = Field(alias="freeParticipantCount")
-    nearest_appointment: datetime | None = Field(alias="nearestDate")
 
 
 class Appointment(BaseModel):

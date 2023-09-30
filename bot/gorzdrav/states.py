@@ -7,3 +7,7 @@ class AppointmentStates(StatesGroup):
     speciality = State()
     doctor = State()
     appointment = State()
+
+
+class TrackingStates(StatesGroup):
+    time_range = State()

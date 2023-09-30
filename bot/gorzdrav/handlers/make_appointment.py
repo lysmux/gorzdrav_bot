@@ -27,6 +27,6 @@ async def appointment_handler(message: types.Message, state: FSMContext):
             doctor=doctor.id,
         )
 
-        await message.answer(text=render_template("make_appointment.html", url=url))
+        await message.answer(text=render_template("success/make_appointment.html", url=url))
     else:
-        await message.answer(text=render_template("unknown_appointment.html", appointment=message.text))
+        await message.answer(text=render_template("errors/unknown_appointment.html", appointment=message.text))

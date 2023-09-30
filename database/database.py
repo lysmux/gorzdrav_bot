@@ -5,12 +5,14 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 
 from database.models.base import Base
 from database.models.profile import Profile
+from database.models.tracking import Tracking
+from gorzdrav_api.schemas import District, Doctor, Speciality, Clinic
 
 
 async def create_db_pool(host: str, user: str, password: str, database: str):
     database_url = f"postgresql+asyncpg://{user}:{password}@{host}/{database}"
 
-    engine = create_async_engine(database_url, echo=False)
+    engine = create_async_engine(database_url)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
 
     async with engine.begin() as conn:
@@ -48,3 +50,22 @@ class Repository:
         stmt = select(Profile).where(Profile.tg_user_id == tg_user_id)
         result = await self.session.scalars(stmt)
         return result
+
+    async def add_tracking(self,
+                           tg_user_id: int,
+                           district: District,
+                           clinic: Clinic,
+                           speciality: Speciality,
+                           doctor: Doctor,
+                           hours: list[int]
+                           ):
+        tracking = Tracking(
+            tg_user_id=tg_user_id,
+            district=district,
+            clinic=clinic,
+            speciality=speciality,
+            doctor=doctor,
+            hours=hours
+        )
+        self.session.add(tracking)
+        await self.session.commit()
