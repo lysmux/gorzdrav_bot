@@ -69,3 +69,8 @@ class Repository:
         )
         self.session.add(tracking)
         await self.session.commit()
+
+    async def get_user_tracking(self, tg_user_id: int):
+        stmt = select(Tracking).where(Tracking.tg_user_id == tg_user_id)
+        result = await self.session.scalars(stmt)
+        return result

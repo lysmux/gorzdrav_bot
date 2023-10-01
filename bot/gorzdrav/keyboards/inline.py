@@ -1,7 +1,11 @@
+from typing import Iterable
+
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from bot.gorzdrav.keyboards import button_texts
-from bot.gorzdrav.keyboards.callback_datas import TimeRangeCallback, TimeRange
+from bot.gorzdrav.keyboards.callback_datas import TimeRangeCallback, TimeRange, SelectTrackingCallback
+from bot.utils.template_engine import render_template
+from database.models.tracking import Tracking
 
 
 def monitor_keyboard_factory():
@@ -31,3 +35,19 @@ def time_range_keyboard_factory():
     ])
 
     return keyboard
+
+
+def tracking_paginator_items_factory(tracking: Iterable[Tracking]) -> tuple[list[str], list[InlineKeyboardButton]]:
+    texts = []
+    buttons = []
+
+    for track in tracking:
+        texts.append(
+            render_template("info/tracking_item.html", track=track)
+        )
+        buttons.append(InlineKeyboardButton(
+            text=str(track.id),
+            callback_data=SelectTrackingCallback(id=track.id).pack()
+        ))
+
+    return texts, buttons

@@ -21,8 +21,8 @@ class PydanticType(TypeDecorator):
         super().__init__()
         self.pydantic_model = pydantic_model
 
-    def process_bind_param(self, model: BaseModel, dialect):
+    def process_bind_param(self, model: BaseModel, *args):
         return model.model_dump(mode="json") if model else None
 
-    def process_result_value(self, json: str, *args):
-        return self.pydantic_model.model_validate_json(json) if json else None
+    def process_result_value(self, value: dict, *args):
+        return self.pydantic_model.model_validate(value) if value else None

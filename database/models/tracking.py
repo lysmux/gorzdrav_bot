@@ -17,3 +17,14 @@ class Tracking(Base):
     clinic = Column(PydanticType(Clinic), nullable=False)
     speciality = Column(PydanticType(Speciality), nullable=False)
     doctor = Column(PydanticType(Doctor), nullable=False)
+
+    def __repr__(self):
+        return (f"<Tracking("
+                f"id={self.id}, "
+                f"tg_user_id={self.tg_user_id}, "
+                f"hours={self.hours}, "
+                f"district={self.district}, "
+                f"clinic={self.clinic}, "
+                f"speciality={self.speciality}"
+                f"doctor={self.doctor})>")
+

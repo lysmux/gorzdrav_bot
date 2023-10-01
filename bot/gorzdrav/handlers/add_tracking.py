@@ -16,7 +16,7 @@ router.callback_query.middleware(CallbackAnswerMiddleware())
 
 @router.callback_query(AppointmentStates.appointment)
 async def add_tracking_handler(call: types.CallbackQuery, state: FSMContext):
-    await call.message.answer(text=render_template("enter_time_range.html"),
+    await call.message.answer(text=render_template("gorzdrav/tracking/enter_time_range.html"),
                               reply_markup=time_range_keyboard_factory())
     await state.set_state(TrackingStates.time_range)
 
@@ -38,24 +38,24 @@ async def raw_time_range_handler(message: types.Message,
         hour_to = int(hour_to)
 
         if hour_from not in range(24):
-            await message.answer(text=render_template("errors/time_range/range_error.html",
+            await message.answer(text=render_template("gorzdrav/tracking/time_range/range_error.html",
                                                       hour_from=hour_from,
                                                       hour_to=hour_to,
                                                       value=hour_from))
             return
         if hour_to not in range(24):
-            await message.answer(text=render_template("errors/time_range/range_error.html",
+            await message.answer(text=render_template("gorzdrav/tracking/time_range/range_error.html",
                                                       hour_from=hour_from,
                                                       hour_to=hour_to,
                                                       value=hour_to))
             return
-        if hour_from > hour_to:
-            await message.answer(text=render_template("errors/time_range/time_error.html",
+        if hour_from >= hour_to:
+            await message.answer(text=render_template("gorzdrav/tracking/time_range/time_error.html",
                                                       hour_from=hour_from,
                                                       hour_to=hour_to))
             return
 
-        time_range = set(range(hour_from, hour_to + 1))
+        time_range = set(range(hour_from, hour_to))
         selected_hours.update(time_range)
 
     await repository.add_tracking(
@@ -68,7 +68,7 @@ async def raw_time_range_handler(message: types.Message,
     )
     await state.clear()
 
-    await message.answer(text=render_template("success/add_tracking.html"))
+    await message.answer(text=render_template("gorzdrav/tracking/tracking_added.html"))
 
 
 @router.callback_query(TrackingStates.time_range, TimeRangeCallback.filter())
@@ -103,4 +103,4 @@ async def time_range_handler(call: types.CallbackQuery,
         hours=selected_hours
     )
     await state.clear()
-    await call.message.answer(text=render_template("success/add_tracking.html"))
+    await call.message.answer(text=render_template("gorzdrav/tracking/tracking_added.html"))

@@ -12,3 +12,7 @@ class TimeRange(Enum):
 
 class TimeRangeCallback(CallbackData, prefix="time_range"):
     time_range: TimeRange
+
+
+class SelectTrackingCallback(CallbackData, prefix="select_tracking"):
+    id: int
