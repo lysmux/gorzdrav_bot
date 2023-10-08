@@ -22,21 +22,5 @@ class TrackingCallback(CallbackData, prefix="tracking"):
     id: int
 
 
-class DistrictCallback(CallbackData, prefix="district"):
-    id: str
-
-
-class ClinicCallback(CallbackData, prefix="clinic"):
-    id: str
-
-
-class SpecialityCallback(CallbackData, prefix="spec"):
-    id: str
-
-
-class DoctorCallback(CallbackData, prefix="doctor"):
-    id: str
-
-
-class AppointmentCallback(CallbackData, prefix="appointment", sep="#"):
+class ItemCallback(CallbackData, prefix="gitem", sep="#"):
     id: str

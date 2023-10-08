@@ -4,19 +4,19 @@ from bot.gorzdrav.keyboards import buttons_texts
 from bot.gorzdrav.keyboards import callbacks
 
 
-def tracking_keyboard_factory():
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+def add_tracking_mp():
+    markup = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text=buttons_texts.ADD_TO_TRACKER,
                                  callback_data=callbacks.AddTrackingCallback().pack())
         ]
     ])
 
-    return keyboard
+    return markup
 
 
-def time_range_keyboard_factory():
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+def time_range_mp():
+    markup = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text=buttons_texts.MORNING,
                                  callback_data=callbacks.TimeRangeCallback(
@@ -39,4 +39,4 @@ def time_range_keyboard_factory():
         ]
     ])
 
-    return keyboard
+    return markup

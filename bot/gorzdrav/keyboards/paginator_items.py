@@ -28,7 +28,7 @@ def districts_items_factory(districts: Iterable[District]) -> list[PaginatorItem
         PaginatorItem(
             button=InlineKeyboardButton(
                 text=district.name,
-                callback_data=callbacks.DistrictCallback(id=district.id).pack()
+                callback_data=callbacks.ItemCallback(id=district.id).pack()
             )
         ) for district in districts
     ]
@@ -42,7 +42,7 @@ def clinics_items_factory(clinics: Iterable[Clinic]) -> list[PaginatorItem]:
             text=render_template("gorzdrav/appointment/clinic_item.html", clinic=clinic),
             button=InlineKeyboardButton(
                 text=clinic.short_name,
-                callback_data=callbacks.ClinicCallback(id=clinic.id).pack()
+                callback_data=callbacks.ItemCallback(id=clinic.id).pack()
             )
         ) for clinic in clinics
     ]
@@ -55,7 +55,7 @@ def specialities_items_factory(specialities: Iterable[Speciality]) -> list[Pagin
         PaginatorItem(
             button=InlineKeyboardButton(
                 text=speciality.name,
-                callback_data=callbacks.SpecialityCallback(id=speciality.id).pack()
+                callback_data=callbacks.ItemCallback(id=speciality.id).pack()
             )
         ) for speciality in specialities
     ]
@@ -69,7 +69,7 @@ def doctors_items_factory(doctors: Iterable[Doctor]) -> list[PaginatorItem]:
             text=render_template("gorzdrav/appointment/doctor_item.html", doctor=doctor),
             button=InlineKeyboardButton(
                 text=doctor.short_name,
-                callback_data=callbacks.DoctorCallback(id=doctor.id).pack()
+                callback_data=callbacks.ItemCallback(id=doctor.id).pack()
             )
         ) for doctor in doctors
     ]
@@ -82,7 +82,7 @@ def appointments_items_factory(appointments: Iterable[Appointment]) -> list[Pagi
         PaginatorItem(
             button=InlineKeyboardButton(
                 text=appointment.time_str,
-                callback_data=callbacks.AppointmentCallback(id=appointment.id).pack()
+                callback_data=callbacks.ItemCallback(id=appointment.id).pack()
             )
         ) for appointment in appointments
     ]

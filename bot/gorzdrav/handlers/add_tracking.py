@@ -4,9 +4,8 @@ from aiogram import Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 
-from bot.gorzdrav.keyboards import callbacks
-from bot.gorzdrav.keyboards.callbacks import TimeRangeCallback, TimeRange
-from bot.gorzdrav.keyboards.inline import time_range_keyboard_factory
+from bot.gorzdrav.keyboards import inline
+from bot.gorzdrav.keyboards.callbacks import AddTrackingCallback, TimeRangeCallback, TimeRange
 from bot.gorzdrav.states import AppointmentStates, TrackingStates
 from bot.utils.template_engine import render_template
 from database.database import Repository
@@ -17,13 +16,13 @@ router.callback_query.middleware(CallbackAnswerMiddleware())
 
 @router.callback_query(
     AppointmentStates.appointment,
-    callbacks.AddTrackingCallback.filter()
+    AddTrackingCallback.filter()
 )
 async def add_tracking_handler(
         call: types.CallbackQuery,
         state: FSMContext
 ):
-    markup = time_range_keyboard_factory()
+    markup = inline.time_range_mp()
     await call.message.edit_text(text=render_template("gorzdrav/tracking/enter_time_range.html"),
                                  reply_markup=markup)
     await state.set_state(TrackingStates.time_range)

@@ -3,7 +3,8 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 
-from bot.gorzdrav.keyboards import inline, paginator_items, callbacks
+from bot.gorzdrav.keyboards import inline, paginator_items
+from bot.gorzdrav.keyboards.callbacks import ItemCallback
 from bot.gorzdrav.states import AppointmentStates
 from bot.middlewares.gorzdrav_api import GorZdravAPIMiddleware
 from bot.utils.inline_paginator import Paginator
@@ -40,11 +41,11 @@ async def make_appointment_handler(
 
 @router.callback_query(
     AppointmentStates.district,
-    callbacks.DistrictCallback.filter()
+    ItemCallback.filter()
 )
 async def district_handler(
         call: types.CallbackQuery,
-        callback_data: callbacks.DistrictCallback,
+        callback_data: ItemCallback,
         state: FSMContext,
         gorzdrav_api: GorZdravAPI
 ):
@@ -68,11 +69,11 @@ async def district_handler(
 
 @router.callback_query(
     AppointmentStates.clinic,
-    callbacks.ClinicCallback.filter()
+    ItemCallback.filter()
 )
 async def clinic_handler(
         call: types.CallbackQuery,
-        callback_data: callbacks.ClinicCallback,
+        callback_data: ItemCallback,
         state: FSMContext,
         gorzdrav_api: GorZdravAPI
 ):
@@ -96,11 +97,11 @@ async def clinic_handler(
 
 @router.callback_query(
     AppointmentStates.speciality,
-    callbacks.SpecialityCallback.filter()
+    ItemCallback.filter()
 )
 async def speciality_handler(
         call: types.CallbackQuery,
-        callback_data: callbacks.SpecialityCallback,
+        callback_data: ItemCallback,
         state: FSMContext,
         gorzdrav_api: GorZdravAPI
 ):
@@ -126,11 +127,11 @@ async def speciality_handler(
 
 @router.callback_query(
     AppointmentStates.doctor,
-    callbacks.DoctorCallback.filter()
+    ItemCallback.filter()
 )
 async def doctor_handler(
         call: types.CallbackQuery,
-        callback_data: callbacks.DoctorCallback,
+        callback_data: ItemCallback,
         state: FSMContext,
         gorzdrav_api: GorZdravAPI
 ):
@@ -139,7 +140,7 @@ async def doctor_handler(
     selected_clinic = state_data["selected_clinic"]
     selected_doctor = next(filter(lambda x: x.id == callback_data.id, doctors))
 
-    markup = inline.tracking_keyboard_factory()
+    markup = inline.add_tracking_mp()
 
     appointments = await gorzdrav_api.get_appointments(selected_clinic, selected_doctor)
     if appointments:
