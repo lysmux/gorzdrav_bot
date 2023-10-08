@@ -1,6 +1,7 @@
 from aiogram import types, Router
 from aiogram.fsm.context import FSMContext
 
+from bot.gorzdrav.keyboards.callbacks import AppointmentCallback
 from bot.gorzdrav.states import AppointmentStates
 from bot.utils.template_engine import render_template
 from gorzdrav_api.utils import generate_gorzdrav_url
@@ -8,8 +9,15 @@ from gorzdrav_api.utils import generate_gorzdrav_url
 router = Router()
 
 
-@router.message(AppointmentStates.appointment)
-async def appointment_handler(message: types.Message, state: FSMContext):
+@router.callback_query(
+    AppointmentStates.appointment,
+    AppointmentCallback.filter()
+)
+async def appointment_handler(
+        call: types.CallbackQuery,
+        callback_data: AppointmentCallback,
+        state: FSMContext
+):
     state_data = await state.get_data()
     district = state_data["selected_district"]
     clinic = state_data["selected_clinic"]
@@ -17,16 +25,13 @@ async def appointment_handler(message: types.Message, state: FSMContext):
     doctor = state_data["selected_doctor"]
 
     appointments = state_data["appointments"]
-    selected_appointment = next(filter(lambda x: x.time_str == message.text, appointments), None)
+    selected_appointment = next(filter(lambda x: x.id == callback_data.id, appointments))  # for future
 
-    if selected_appointment:
-        url = generate_gorzdrav_url(
-            district=district.id,
-            clinic=clinic.id,
-            speciality=speciality.id,
-            doctor=doctor.id,
-        )
+    url = generate_gorzdrav_url(
+        district=district.id,
+        clinic=clinic.id,
+        speciality=speciality.id,
+        doctor=doctor.id,
+    )
 
-        await message.answer(text=render_template("success/go_url.html", url=url))
-    else:
-        await message.answer(text=render_template("errors/unknown_appointment.html", appointment=message.text))
+    await call.message.edit_text(text=render_template("gorzdrav/appointment/go_url.html", url=url))

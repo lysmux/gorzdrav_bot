@@ -1,97 +1,163 @@
 from aiogram import Router, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 
-from bot.gorzdrav.keyboards import reply, inline
+from bot.gorzdrav.keyboards import inline, paginator_items, callbacks
 from bot.gorzdrav.states import AppointmentStates
 from bot.middlewares.gorzdrav_api import GorZdravAPIMiddleware
+from bot.utils.inline_paginator import Paginator
 from bot.utils.template_engine import render_template
 from gorzdrav_api.api import GorZdravAPI
 
 router = Router()
+
 router.message.middleware(GorZdravAPIMiddleware())
+router.callback_query.middleware(GorZdravAPIMiddleware())
+router.callback_query.middleware(CallbackAnswerMiddleware())
 
 
 @router.message(Command("make_appointment"))
-async def make_appointment_handler(message: types.Message, state: FSMContext, gorzdrav_api: GorZdravAPI):
+async def make_appointment_handler(
+        message: types.Message,
+        state: FSMContext,
+        gorzdrav_api: GorZdravAPI
+):
     districts = await gorzdrav_api.get_districts()
-    keyboard = reply.districts_keyboard_factory(districts)
+    items = paginator_items.districts_items_factory(districts)
+
+    paginator = Paginator(
+        router=router,
+        name="districts",
+        header_text=render_template("gorzdrav/appointment/districts_header.html"),
+        items=items
+    )
 
     await state.set_state(AppointmentStates.district)
     await state.update_data(districts=districts)
-    await message.answer(text=render_template("gorzdrav/appointment/districts.html"), reply_markup=keyboard)
+    await paginator.send_paginator(message)
 
 
-@router.message(AppointmentStates.district)
-async def district_handler(message: types.Message, state: FSMContext, gorzdrav_api: GorZdravAPI):
+@router.callback_query(
+    AppointmentStates.district,
+    callbacks.DistrictCallback.filter()
+)
+async def district_handler(
+        call: types.CallbackQuery,
+        callback_data: callbacks.DistrictCallback,
+        state: FSMContext,
+        gorzdrav_api: GorZdravAPI
+):
     districts = (await state.get_data())["districts"]
-    selected_district = next(filter(lambda x: x.name == message.text, districts), None)
+    selected_district = next(filter(lambda x: x.id == callback_data.id, districts))
 
-    if selected_district:
-        clinics = await gorzdrav_api.get_clinics(selected_district)
-        keyboard = reply.clinics_keyboard_factory(clinics)
-        await state.set_state(AppointmentStates.clinic)
-        await state.update_data(clinics=clinics, selected_district=selected_district)
-        await message.answer(text=render_template("gorzdrav/appointment/clinics.html", clinics=clinics),
-                             reply_markup=keyboard)
-    else:
-        await message.answer(text=render_template("gorzdrav/appointment/unknown_district.html", district=message.text))
+    clinics = await gorzdrav_api.get_clinics(selected_district)
+    items = paginator_items.clinics_items_factory(clinics)
+
+    paginator = Paginator(
+        router=router,
+        name="clinics",
+        header_text=render_template("gorzdrav/appointment/clinics_header.html"),
+        items=items
+    )
+
+    await state.set_state(AppointmentStates.clinic)
+    await state.update_data(clinics=clinics, selected_district=selected_district)
+    await paginator.update_paginator(call)
 
 
-@router.message(AppointmentStates.clinic)
-async def clinic_handler(message: types.Message, state: FSMContext, gorzdrav_api: GorZdravAPI):
+@router.callback_query(
+    AppointmentStates.clinic,
+    callbacks.ClinicCallback.filter()
+)
+async def clinic_handler(
+        call: types.CallbackQuery,
+        callback_data: callbacks.ClinicCallback,
+        state: FSMContext,
+        gorzdrav_api: GorZdravAPI
+):
     clinics = (await state.get_data())["clinics"]
-    selected_clinic = next(filter(lambda x: x.short_name == message.text, clinics), None)
+    selected_clinic = next(filter(lambda x: x.id == callback_data.id, clinics))
 
-    if selected_clinic:
-        specialities = await gorzdrav_api.get_specialities(selected_clinic)
-        keyboard = reply.specialities_keyboard_factory(specialities)
-        await state.set_state(AppointmentStates.speciality)
-        await state.update_data(specialities=specialities, selected_clinic=selected_clinic)
-        await message.answer(text=render_template("gorzdrav/appointment/specialities.html"), reply_markup=keyboard)
-    else:
-        await message.answer(text=render_template("gorzdrav/appointment/unknown_clinic.html", clinic=message.text))
+    specialities = await gorzdrav_api.get_specialities(selected_clinic)
+    items = paginator_items.specialities_items_factory(specialities)
+
+    paginator = Paginator(
+        router=router,
+        name="specialities",
+        header_text=render_template("gorzdrav/appointment/specialities_header.html"),
+        items=items
+    )
+
+    await state.set_state(AppointmentStates.speciality)
+    await state.update_data(specialities=specialities, selected_clinic=selected_clinic)
+    await paginator.update_paginator(call)
 
 
-@router.message(AppointmentStates.speciality)
-async def speciality_handler(message: types.Message, state: FSMContext, gorzdrav_api: GorZdravAPI):
+@router.callback_query(
+    AppointmentStates.speciality,
+    callbacks.SpecialityCallback.filter()
+)
+async def speciality_handler(
+        call: types.CallbackQuery,
+        callback_data: callbacks.SpecialityCallback,
+        state: FSMContext,
+        gorzdrav_api: GorZdravAPI
+):
     state_data = await state.get_data()
     specialities = state_data["specialities"]
     selected_clinic = state_data["selected_clinic"]
-    selected_speciality = next(filter(lambda x: x.name == message.text, specialities), None)
+    selected_speciality = next(filter(lambda x: x.id == callback_data.id, specialities))
 
-    if selected_speciality:
-        doctors = await gorzdrav_api.get_doctors(selected_clinic, selected_speciality)
-        keyboard = reply.doctors_keyboard_factory(doctors)
-        await state.set_state(AppointmentStates.doctor)
-        await state.update_data(doctors=doctors, selected_speciality=selected_speciality)
-        await message.answer(text=render_template("gorzdrav/appointment/doctors.html", doctors=doctors),
-                             reply_markup=keyboard)
-    else:
-        await message.answer(
-            text=render_template("gorzdrav/appointment/unknown_speciality.html", speciality=message.text))
+    doctors = await gorzdrav_api.get_doctors(selected_clinic, selected_speciality)
+    items = paginator_items.doctors_items_factory(doctors)
+
+    paginator = Paginator(
+        router=router,
+        name="doctors",
+        header_text=render_template("gorzdrav/appointment/doctors_header.html"),
+        items=items
+    )
+
+    await state.set_state(AppointmentStates.doctor)
+    await state.update_data(doctors=doctors, selected_speciality=selected_speciality)
+    await paginator.update_paginator(call)
 
 
-@router.message(AppointmentStates.doctor)
-async def doctor_handler(message: types.Message, state: FSMContext, gorzdrav_api: GorZdravAPI):
+@router.callback_query(
+    AppointmentStates.doctor,
+    callbacks.DoctorCallback.filter()
+)
+async def doctor_handler(
+        call: types.CallbackQuery,
+        callback_data: callbacks.DoctorCallback,
+        state: FSMContext,
+        gorzdrav_api: GorZdravAPI
+):
     state_data = await state.get_data()
     doctors = state_data["doctors"]
     selected_clinic = state_data["selected_clinic"]
-    selected_doctor = next(filter(lambda x: x.name == message.text, doctors), None)
+    selected_doctor = next(filter(lambda x: x.id == callback_data.id, doctors))
 
-    if selected_doctor:
-        appointments = await gorzdrav_api.get_appointments(selected_clinic, selected_doctor)
-        if appointments:
-            keyboard = reply.appointments_keyboard_factory(appointments)
-            await state.update_data(appointments=appointments)
-            await message.answer(text=render_template("gorzdrav/appointment/appointments.html", doctors=doctors),
-                                 reply_markup=keyboard)
+    markup = inline.tracking_keyboard_factory()
 
-        action_keyboard = inline.monitor_keyboard_factory()
-        await message.answer(
-            text=render_template("gorzdrav/tracking/add_tracking.html", no_appointments=not bool(appointments)),
-            reply_markup=action_keyboard)
-        await state.update_data(selected_doctor=selected_doctor)
-        await state.set_state(AppointmentStates.appointment)
+    appointments = await gorzdrav_api.get_appointments(selected_clinic, selected_doctor)
+    if appointments:
+        items = paginator_items.appointments_items_factory(appointments)
+        paginator = Paginator(
+            router=router,
+            name="appointments",
+            header_text=render_template("gorzdrav/appointment/appointments_header.html"),
+            items=items,
+            static_markup=markup
+        )
+
+        await state.update_data(appointments=appointments)
+        await paginator.update_paginator(call)
     else:
-        await message.answer(text=render_template("gorzdrav/appointment/unknown_doctor.html", doctor=message.text))
+        await call.message.edit_text(
+            text=render_template("gorzdrav/appointment/no_appointments.html"),
+            reply_markup=markup)
+
+    await state.update_data(selected_doctor=selected_doctor)
+    await state.set_state(AppointmentStates.appointment)

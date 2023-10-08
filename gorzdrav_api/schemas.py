@@ -1,10 +1,11 @@
+import re
 from datetime import datetime
 
 from pydantic import BaseModel, Field, computed_field, ConfigDict
 
 
 class Model(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, coerce_numbers_to_str=True)
 
 
 class District(Model):
@@ -13,7 +14,7 @@ class District(Model):
 
 
 class Clinic(Model):
-    id: int
+    id: str
     address: str
     full_name: str = Field(alias="lpuFullName")
     short_name: str = Field(alias="lpuShortName")
@@ -28,6 +29,11 @@ class Doctor(Model):
     id: str
     name: str
     free_appointments: int = Field(alias="freeParticipantCount")
+
+    @computed_field
+    @property
+    def short_name(self) -> str:
+        return re.sub(r"(?<= \w)\w+", ".", self.name)
 
 
 class Appointment(Model):
