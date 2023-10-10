@@ -2,7 +2,8 @@ from jinja2 import Environment, select_autoescape, PackageLoader
 
 env = Environment(
     loader=PackageLoader("bot", "answer_templates"),
-    autoescape=select_autoescape(["html"])
+    autoescape=select_autoescape(["html"]),
+    lstrip_blocks=True
 )
 
 

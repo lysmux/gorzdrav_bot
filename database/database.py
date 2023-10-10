@@ -60,7 +60,7 @@ class Repository:
             clinic: Clinic,
             speciality: Speciality,
             doctor: Doctor,
-            hours: list[int]
+            time_ranges: list[list[int]]
 
     ):
         tracking = Tracking(
@@ -69,7 +69,7 @@ class Repository:
             clinic=clinic,
             speciality=speciality,
             doctor=doctor,
-            hours=hours
+            time_ranges=time_ranges
         )
         self.session.add(tracking)
         await self.session.commit()

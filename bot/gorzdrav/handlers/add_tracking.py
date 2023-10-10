@@ -34,7 +34,7 @@ async def raw_time_range_handler(
         state: FSMContext,
         repository: Repository
 ):
-    selected_hours = set()
+    time_ranges = []
     raw_time_ranges = re.findall(r"(\d*)-(\d*)", message.text)
     for hour_from, hour_to in raw_time_ranges:
         hour_from = int(hour_from)
@@ -61,8 +61,7 @@ async def raw_time_range_handler(
             await message.answer(text=error_text)
             return
 
-        time_range = set(range(hour_from, hour_to))
-        selected_hours.update(time_range)
+        time_ranges.append([hour_from, hour_to])
 
     state_data = await state.get_data()
     district = state_data.get("selected_district")
@@ -76,7 +75,7 @@ async def raw_time_range_handler(
         clinic=clinic,
         speciality=speciality,
         doctor=doctor,
-        hours=list(selected_hours)
+        time_ranges=time_ranges
     )
     await state.clear()
     await message.answer(text=render_template("gorzdrav/tracking/tracking_added.html"))
@@ -98,15 +97,15 @@ async def time_range_handler(
 ):
     match callback_data.time_range:
         case TimeRange.morning:
-            selected_hours = list(range(13))
+            time_range = list(range(13))
         case TimeRange.afternoon:
-            selected_hours = list(range(13, 18))
+            time_range = list(range(13, 18))
         case TimeRange.evening:
-            selected_hours = list(range(18, 24))
+            time_range = list(range(18, 24))
         case TimeRange.all_day:
-            selected_hours = list(range(24))
+            time_range = list(range(24))
         case _:
-            selected_hours = []
+            time_range = []
 
     state_data = await state.get_data()
     district = state_data.get("selected_district")
@@ -120,7 +119,7 @@ async def time_range_handler(
         clinic=clinic,
         speciality=speciality,
         doctor=doctor,
-        hours=selected_hours
+        time_ranges=[time_range]
     )
     await state.clear()
     await call.message.edit_text(text=render_template("gorzdrav/tracking/tracking_added.html"))

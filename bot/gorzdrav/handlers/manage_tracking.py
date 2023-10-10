@@ -18,14 +18,17 @@ async def tracking_list_handler(
     tracking = await repository.get_user_tracking(tg_user_id=message.from_user.id)
     items = paginator_items.tracking_items_factory(tracking)
 
-    paginator = Paginator(
-        router=router,
-        name="tracking",
-        header_text=render_template("gorzdrav/tracking/tracking_header.html"),
-        items=items
-    )
+    if items:
+        paginator = Paginator(
+            router=router,
+            name="tracking",
+            header_text=render_template("gorzdrav/tracking/tracking_header.html"),
+            items=items
+        )
 
-    await paginator.send_paginator(message)
+        await paginator.send_paginator(message)
+    else:
+        await message.answer(text=render_template("gorzdrav/tracking/no_tracking.html"))
 
 
 @router.callback_query(

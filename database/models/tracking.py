@@ -11,7 +11,7 @@ class Tracking(Base):
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     tg_user_id = Column(Integer, nullable=False)
 
-    hours = Column(ARRAY(Integer), nullable=False)
+    time_ranges = Column(ARRAY(Integer), nullable=False)
 
     district = Column(PydanticType(District), nullable=False)
     clinic = Column(PydanticType(Clinic), nullable=False)
@@ -22,7 +22,7 @@ class Tracking(Base):
         return (f"<Tracking("
                 f"id={self.id}, "
                 f"tg_user_id={self.tg_user_id}, "
-                f"hours={self.hours}, "
+                f"time_ranges={self.ranges}, "
                 f"district={self.district}, "
                 f"clinic={self.clinic}, "
                 f"speciality={self.speciality}"

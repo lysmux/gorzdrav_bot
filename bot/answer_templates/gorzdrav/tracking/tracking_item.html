@@ -1,1 +1,5 @@
-📝 ID: {{ track.id }} к {{ track.speciality.name }} {{ track.doctor.name }} в {{ track.clinic.full_name }}
+📝 ID: {{ track.id }} к {{ track.speciality.name }} {{ track.doctor.name }} в {{ track.clinic.full_name }} <i>
+{%- for time_range in track.time_ranges -%}
+    с {{ time_range[0] }} до {{ time_range[1] }}{{ ", " if not loop.last else "" }}
+{%- endfor -%}
+</i>
