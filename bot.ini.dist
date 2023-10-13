@@ -1,9 +1,0 @@
-[bot]
-token:
-use_redis:
-
-[database]
-host:
-user:
-password:
-database:

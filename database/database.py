@@ -9,8 +9,14 @@ from database.models.tracking import Tracking
 from gorzdrav_api.schemas import District, Doctor, Speciality, Clinic
 
 
-async def create_db_pool(host: str, user: str, password: str, database: str):
-    database_url = f"postgresql+asyncpg://{user}:{password}@{host}/{database}"
+async def create_db_pool(
+        host: str,
+        port: int,
+        user: str,
+        password: str,
+        database: str
+):
+    database_url = f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{database}"
 
     engine = create_async_engine(database_url)
     async_session = async_sessionmaker(engine, expire_on_commit=False)

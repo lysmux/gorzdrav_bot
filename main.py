@@ -10,7 +10,7 @@ from redis.asyncio import Redis
 from bot import common, gorzdrav, profile
 from bot.middlewares.database import DatabaseMiddleware
 from bot.utils.set_bot_commands import set_bot_commands
-from config import Config
+from config import Settings
 from database.database import create_db_pool
 
 logging.basicConfig(
@@ -21,21 +21,22 @@ logger = logging.getLogger(__name__)
 
 
 async def main():
-    config = Config.load_config("bot.ini")
+    settings = Settings()
 
-    if config.bot.use_redis:
+    if settings.bot.use_redis:
         storage = RedisStorage(Redis())
     else:
         storage = MemoryStorage()
 
     database_pool = await create_db_pool(
-        host=config.db.host,
-        user=config.db.user,
-        password=config.db.password,
-        database=config.db.database,
+        host=settings.db.host,
+        port=settings.db.port,
+        user=settings.db.user,
+        password=settings.db.password,
+        database=settings.db.database,
     )
 
-    bot = Bot(token=config.bot.token, parse_mode=ParseMode.HTML)
+    bot = Bot(token=settings.bot.token, parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=storage)
 
     dp.include_routers(

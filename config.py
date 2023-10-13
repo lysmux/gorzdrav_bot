@@ -1,45 +1,25 @@
-import configparser
-from dataclasses import dataclass
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings
 
 
-@dataclass
-class Database:
-    host: str
-    port: int
+class DatabaseSettings(BaseModel):
+    host: str = "localhost"
+    port: int = 5432
     user: str
     password: str
     database: str
 
 
-@dataclass
-class Bot:
+class BotSettings(BaseModel):
     token: str
-    use_redis: bool
+    use_redis: bool = False
 
 
-@dataclass
-class Config:
-    bot: Bot
-    db: Database
+class Settings(BaseSettings):
+    bot: BotSettings
+    db: DatabaseSettings
 
-    @classmethod
-    def load_config(cls, path: str):
-        config = configparser.ConfigParser()
-        config.read(path)
-
-        bot_config = config["bot"]
-        db_config = config["database"]
-
-        return cls(
-            bot=Bot(
-                token=bot_config.get("token"),
-                use_redis=bot_config.getboolean("use_redis"),
-            ),
-            db=Database(
-                host=db_config.get("host"),
-                port=db_config.getint("port"),
-                user=db_config.get("user"),
-                password=db_config.get("password"),
-                database=db_config.get("database")
-            ),
-        )
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        env_nested_delimiter = "__"
