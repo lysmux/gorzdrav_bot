@@ -4,8 +4,8 @@ from aiogram.types import BotCommand
 commands = {
     "start": "Об этом боте",
     "help": "Помощь",
-    "make_appointment": "Записаться на приём",
-    "profiles": "Список профилей"
+    "make_appointment": "Записаться к врачу",
+    "tracking": "Список отслеживаний"
 }
 
 
