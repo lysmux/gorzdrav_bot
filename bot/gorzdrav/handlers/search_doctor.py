@@ -49,10 +49,10 @@ async def district_handler(
         state: FSMContext,
         gorzdrav_api: GorZdravAPI
 ):
-    districts = (await state.get_data())["districts"]
-    selected_district = next(filter(lambda x: x.id == callback_data.id, districts))
+    districts = (await state.get_data()).get("districts")
+    district = next(filter(lambda x: x.id == callback_data.id, districts))
 
-    clinics = await gorzdrav_api.get_clinics(selected_district)
+    clinics = await gorzdrav_api.get_clinics(district)
     items = paginator_items.clinics_items_factory(clinics)
 
     paginator = Paginator(
@@ -63,7 +63,7 @@ async def district_handler(
     )
 
     await state.set_state(AppointmentStates.clinic)
-    await state.update_data(clinics=clinics, selected_district=selected_district)
+    await state.update_data(clinics=clinics, district=district)
     await paginator.update_paginator(call)
 
 
@@ -77,10 +77,10 @@ async def clinic_handler(
         state: FSMContext,
         gorzdrav_api: GorZdravAPI
 ):
-    clinics = (await state.get_data())["clinics"]
-    selected_clinic = next(filter(lambda x: x.id == callback_data.id, clinics))
+    clinics = (await state.get_data()).get("clinics")
+    clinic = next(filter(lambda x: x.id == callback_data.id, clinics))
 
-    specialities = await gorzdrav_api.get_specialities(selected_clinic)
+    specialities = await gorzdrav_api.get_specialities(clinic)
     items = paginator_items.specialities_items_factory(specialities)
 
     paginator = Paginator(
@@ -91,7 +91,7 @@ async def clinic_handler(
     )
 
     await state.set_state(AppointmentStates.speciality)
-    await state.update_data(specialities=specialities, selected_clinic=selected_clinic)
+    await state.update_data(specialities=specialities, clinic=clinic)
     await paginator.update_paginator(call)
 
 
@@ -106,11 +106,11 @@ async def speciality_handler(
         gorzdrav_api: GorZdravAPI
 ):
     state_data = await state.get_data()
-    specialities = state_data["specialities"]
-    selected_clinic = state_data["selected_clinic"]
-    selected_speciality = next(filter(lambda x: x.id == callback_data.id, specialities))
+    specialities = state_data.get("specialities")
+    clinic = state_data.get("clinic")
+    speciality = next(filter(lambda x: x.id == callback_data.id, specialities))
 
-    doctors = await gorzdrav_api.get_doctors(selected_clinic, selected_speciality)
+    doctors = await gorzdrav_api.get_doctors(clinic, speciality)
     items = paginator_items.doctors_items_factory(doctors)
 
     paginator = Paginator(
@@ -121,7 +121,7 @@ async def speciality_handler(
     )
 
     await state.set_state(AppointmentStates.doctor)
-    await state.update_data(doctors=doctors, selected_speciality=selected_speciality)
+    await state.update_data(doctors=doctors, speciality=speciality)
     await paginator.update_paginator(call)
 
 
@@ -136,15 +136,23 @@ async def doctor_handler(
         gorzdrav_api: GorZdravAPI
 ):
     state_data = await state.get_data()
-    doctors = state_data["doctors"]
-    selected_clinic = state_data["selected_clinic"]
-    selected_doctor = next(filter(lambda x: x.id == callback_data.id, doctors))
+    district = state_data.get("district")
+    clinic = state_data.get("clinic")
+    speciality = state_data.get("speciality")
+    doctors = state_data.get("doctors")
+    doctor = next(filter(lambda x: x.id == callback_data.id, doctors))
 
     markup = inline.add_tracking_mp()
 
-    appointments = await gorzdrav_api.get_appointments(selected_clinic, selected_doctor)
+    appointments = await gorzdrav_api.get_appointments(clinic, doctor)
     if appointments:
-        items = paginator_items.appointments_items_factory(appointments)
+        items = paginator_items.appointments_items_factory(
+            district=district,
+            clinic=clinic,
+            speciality=speciality,
+            doctor=doctor,
+            appointments=appointments
+        )
         paginator = Paginator(
             router=router,
             name="appointments",
@@ -153,12 +161,11 @@ async def doctor_handler(
             static_markup=markup
         )
 
-        await state.update_data(appointments=appointments)
         await paginator.update_paginator(call)
     else:
         await call.message.edit_text(
             text=render_template("gorzdrav/appointment/no_appointments.html"),
             reply_markup=markup)
 
-    await state.update_data(selected_doctor=selected_doctor)
+    await state.update_data(doctor=doctor)
     await state.set_state(AppointmentStates.appointment)

@@ -2,6 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from bot.gorzdrav.keyboards import buttons_texts
 from bot.gorzdrav.keyboards import callbacks
+from database.models.tracking import Tracking
 
 
 def add_tracking_mp():
@@ -9,6 +10,17 @@ def add_tracking_mp():
         [
             InlineKeyboardButton(text=buttons_texts.ADD_TO_TRACKER,
                                  callback_data=callbacks.AddTrackingCallback().pack())
+        ]
+    ])
+
+    return markup
+
+
+def remove_tracking_mp(tracking: Tracking):
+    markup = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text=buttons_texts.REMOVE_FROM_TRACKER,
+                                 callback_data=callbacks.TrackingCallback(id=tracking.id).pack())
         ]
     ])
 

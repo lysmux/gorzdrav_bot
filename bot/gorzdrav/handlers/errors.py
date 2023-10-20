@@ -4,14 +4,13 @@ from aiogram import Router
 from aiogram.filters import ExceptionTypeFilter
 from aiogram.types import ErrorEvent
 
-from bot import bot_asnwers
 from bot.utils.template_engine import render_template
-from gorzdrav_api.exceptions import ServerError, ResponseParseError
+from gorzdrav_api.exceptions import GorZdravError
 
 router = Router()
 
 
-@router.error(ExceptionTypeFilter(ServerError, ResponseParseError))
+@router.error(ExceptionTypeFilter(GorZdravError))
 async def server_error_handler(event: ErrorEvent):
     logging.exception("GorZdrav error", exc_info=event.exception)
 

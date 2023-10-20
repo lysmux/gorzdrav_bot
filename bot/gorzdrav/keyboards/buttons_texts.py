@@ -1,4 +1,5 @@
 ADD_TO_TRACKER = "Добавить в отслеживание"
+REMOVE_FROM_TRACKER = "Удалить из отслеживания"
 
 MORNING = "Утро (до 12)"
 AFTERNOON = "День (с 12 до 18)"

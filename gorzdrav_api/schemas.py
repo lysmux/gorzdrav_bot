@@ -38,7 +38,6 @@ class Doctor(Model):
 
 class Appointment(Model):
     id: str
-    room: str
     time: datetime = Field(alias="visitStart")
 
     @computed_field

@@ -15,9 +15,19 @@ class BotSettings(BaseModel):
     use_redis: bool = False
 
 
+class RedisSettings(BaseModel):
+    host: str
+    port: int = 6379
+    password: str | None = None
+
+
 class Settings(BaseSettings):
+    use_redis: bool = False
+    check_every: int = 5
+
     bot: BotSettings
     db: DatabaseSettings
+    redis: RedisSettings
 
     class Config:
         env_file = ".env"

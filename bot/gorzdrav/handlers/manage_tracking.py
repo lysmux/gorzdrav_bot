@@ -15,8 +15,8 @@ async def tracking_list_handler(
         message: types.Message,
         repository: Repository
 ):
-    tracking = await repository.get_user_tracking(tg_user_id=message.from_user.id)
-    items = paginator_items.tracking_items_factory(tracking)
+    user_tracking = await repository.get_user_tracking(tg_user_id=message.from_user.id)
+    items = paginator_items.tracking_items_factory(user_tracking)
 
     if items:
         paginator = Paginator(

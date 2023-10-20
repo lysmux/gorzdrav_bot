@@ -1,18 +1,22 @@
 import json
 from urllib.parse import quote
 
+from gorzdrav_api.schemas import District, Clinic, Speciality, Doctor
 
-def generate_gorzdrav_url(district: str,
-                             clinic: str,
-                             speciality: str,
-                             doctor: str) -> str:
+
+def generate_gorzdrav_url(
+        district: District,
+        clinic: Clinic,
+        speciality: Speciality,
+        doctor: Doctor
+) -> str:
     base_url = "https://gorzdrav.spb.ru/service-free-schedule#"
 
     params = [
-        {"district": district},
-        {"lpu": clinic},
-        {"speciality": speciality},
-        {"doctor": doctor},
+        {"district": district.id},
+        {"lpu": clinic.id},
+        {"speciality": speciality.id},
+        {"doctor": doctor.id},
     ]
 
     params = json.dumps(params, separators=(",", ":"))

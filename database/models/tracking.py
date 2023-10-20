@@ -22,7 +22,7 @@ class Tracking(Base):
         return (f"<Tracking("
                 f"id={self.id}, "
                 f"tg_user_id={self.tg_user_id}, "
-                f"time_ranges={self.ranges}, "
+                f"time_ranges={self.time_ranges}, "
                 f"district={self.district}, "
                 f"clinic={self.clinic}, "
                 f"speciality={self.speciality}"

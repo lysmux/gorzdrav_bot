@@ -4,14 +4,15 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.fsm.storage.redis import RedisStorage
-from redis.asyncio import Redis
 
-from bot import common, gorzdrav, profile
+from bot import common, gorzdrav
 from bot.middlewares.database import DatabaseMiddleware
+from bot.utils.appointments_checker import AppointmentsChecker
 from bot.utils.set_bot_commands import set_bot_commands
 from config import Settings
 from database.database import create_db_pool
+from misc.redis_storage import Redis
+from misc.redis_storage import RedisPickleStorage
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,9 +24,15 @@ logger = logging.getLogger(__name__)
 async def main():
     settings = Settings()
 
-    if settings.bot.use_redis:
-        storage = RedisStorage(Redis())
+    if settings.use_redis:
+        redis = Redis(
+            host=settings.redis.host,
+            port=settings.redis.port,
+            password=settings.redis.password
+        )
+        storage = RedisPickleStorage(redis)
     else:
+        redis = None
         storage = MemoryStorage()
 
     database_pool = await create_db_pool(
@@ -40,18 +47,27 @@ async def main():
     dp = Dispatcher(storage=storage)
 
     dp.include_routers(
-        profile.router,
         gorzdrav.router,
         common.router,
     )
     dp.message.middleware(DatabaseMiddleware(database_pool))
     dp.callback_query.middleware(DatabaseMiddleware(database_pool))
 
+    appointments_checker = AppointmentsChecker(
+        bot=bot,
+        dispatcher=dp,
+        database_pool=database_pool,
+        check_every=settings.check_every,
+        redis=redis
+    )
+
     await set_bot_commands(bot)
+    await bot.delete_webhook(drop_pending_updates=True)
 
     try:
-        await bot.delete_webhook(drop_pending_updates=True)
-        await dp.start_polling(bot)
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(dp.start_polling(bot))
+            tg.create_task(appointments_checker.run())
     finally:
         await dp.storage.close()
         await bot.session.close()

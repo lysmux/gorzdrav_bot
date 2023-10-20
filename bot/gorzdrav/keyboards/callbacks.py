@@ -18,6 +18,10 @@ class AddTrackingCallback(CallbackData, prefix="add_tracking"):
     pass
 
 
+class RemoveTrackingCallback(CallbackData, prefix="add_tracking"):
+    pass
+
+
 class TrackingCallback(CallbackData, prefix="tracking"):
     id: int
 

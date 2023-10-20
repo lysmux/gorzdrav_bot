@@ -1,11 +1,11 @@
-from typing import TypeVar, cast
+from typing import TypeVar
 from urllib.parse import quote
 
 from aiohttp import ClientSession, client_exceptions, ContentTypeError
 from cashews import cache
 from pydantic import BaseModel, TypeAdapter
 
-from gorzdrav_api.exceptions import ServerError, ResponseParseError
+from gorzdrav_api.exceptions import ServerError, ResponseParseError, ApiError
 from gorzdrav_api.schemas import District, Clinic, Speciality, Doctor, Appointment
 
 cache.setup("mem://")
@@ -28,36 +28,39 @@ class GorZdravAPI:
             self,
             method: str,
             url_part: str,
-            response_model: type[list[BaseModel] | BaseModel],
+            response_model: type[list[P] | P],
             params: dict[str, str] | None = None,
-    ) -> P | list[P] | None:
+    ) -> P | list[P]:
         try:
             response = await self._http_client.request(
-                method,
-                f"{self.API_URL}/{url_part}",
+                method=method,
+                url=f"{self.API_URL}/{url_part}",
                 params=params,
                 headers=self.HEADERS,
                 ssl=False,
             )
         except (client_exceptions.ClientConnectionError, client_exceptions.ClientConnectorError) as e:
-            raise ServerError(f"Connection error, details: {e}")
+            raise ServerError(message=e.message)
 
         if response.status != 200:
-            details = await response.text()
-            raise ServerError(f"Server returned {response.status}, details: {details}")
+            message = await response.text()
+            raise ServerError(code=response.status, message=message)
 
         try:
             deserialized_data = await response.json()
         except ContentTypeError as e:
-            raise ResponseParseError(
-                e.message,
-            )
+            raise ResponseParseError(message=e.message)
 
-        if deserialized_data["success"]:
-            ta = TypeAdapter(response_model)
-            return cast(response_model, ta.validate_python(deserialized_data["result"]))
-        else:
-            return None
+        match deserialized_data["errorCode"]:
+            case 0:
+                ta = TypeAdapter(response_model)
+                return ta.validate_python(deserialized_data["result"])
+            case 39:
+                return []
+            case _:
+                code = deserialized_data["errorCode"]
+                message = deserialized_data["message"]
+                raise ApiError(code=code, message=message)
 
     @cache.soft(ttl="24h", soft_ttl="3h")
     async def get_districts(self) -> list[District]:

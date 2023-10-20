@@ -7,17 +7,18 @@ from bot.utils.inline_paginator import PaginatorItem
 from bot.utils.template_engine import render_template
 from database.models.tracking import Tracking
 from gorzdrav_api.schemas import District, Clinic, Speciality, Doctor, Appointment
+from gorzdrav_api.utils import generate_gorzdrav_url
 
 
-def tracking_items_factory(tracking: Iterable[Tracking]) -> list[PaginatorItem]:
+def tracking_items_factory(user_tracking: Iterable[Tracking]) -> list[PaginatorItem]:
     items = [
         PaginatorItem(
-            text=render_template("gorzdrav/tracking/tracking_item.html", track=track),
+            text=render_template("gorzdrav/tracking/tracking_item.html", tracking=tracking),
             button=InlineKeyboardButton(
-                text=str(track.id),
-                callback_data=callbacks.TrackingCallback(id=track.id).pack()
+                text=str(tracking.id),
+                callback_data=callbacks.TrackingCallback(id=tracking.id).pack()
             )
-        ) for track in tracking
+        ) for tracking in user_tracking
     ]
 
     return items
@@ -77,12 +78,25 @@ def doctors_items_factory(doctors: Iterable[Doctor]) -> list[PaginatorItem]:
     return items
 
 
-def appointments_items_factory(appointments: Iterable[Appointment]) -> list[PaginatorItem]:
+def appointments_items_factory(
+        district: District,
+        clinic: Clinic,
+        speciality: Speciality,
+        doctor: Doctor,
+        appointments: Iterable[Appointment]
+) -> list[PaginatorItem]:
+    url = generate_gorzdrav_url(
+        district=district,
+        clinic=clinic,
+        speciality=speciality,
+        doctor=doctor,
+    )
+
     items = [
         PaginatorItem(
             button=InlineKeyboardButton(
                 text=appointment.time_str,
-                callback_data=callbacks.ItemCallback(id=appointment.id).pack()
+                url=url
             )
         ) for appointment in appointments
     ]

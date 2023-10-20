@@ -64,10 +64,10 @@ async def raw_time_range_handler(
         time_ranges.append([hour_from, hour_to])
 
     state_data = await state.get_data()
-    district = state_data.get("selected_district")
-    clinic = state_data.get("selected_clinic")
-    speciality = state_data.get("selected_speciality")
-    doctor = state_data.get("selected_doctor")
+    district = state_data.get("district")
+    clinic = state_data.get("clinic")
+    speciality = state_data.get("speciality")
+    doctor = state_data.get("doctor")
 
     await repository.add_tracking(
         tg_user_id=message.from_user.id,
@@ -97,21 +97,21 @@ async def time_range_handler(
 ):
     match callback_data.time_range:
         case TimeRange.morning:
-            time_range = list(range(13))
+            time_range = [0, 13]
         case TimeRange.afternoon:
-            time_range = list(range(13, 18))
+            time_range = [13, 18]
         case TimeRange.evening:
-            time_range = list(range(18, 24))
+            time_range = [18, 24]
         case TimeRange.all_day:
-            time_range = list(range(24))
+            time_range = [0, 23]
         case _:
             time_range = []
 
     state_data = await state.get_data()
-    district = state_data.get("selected_district")
-    clinic = state_data.get("selected_clinic")
-    speciality = state_data.get("selected_speciality")
-    doctor = state_data.get("selected_doctor")
+    district = state_data.get("district")
+    clinic = state_data.get("clinic")
+    speciality = state_data.get("speciality")
+    doctor = state_data.get("doctor")
 
     await repository.add_tracking(
         tg_user_id=call.from_user.id,

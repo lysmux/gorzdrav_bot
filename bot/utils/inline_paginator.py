@@ -1,6 +1,6 @@
 from typing import Generator
 
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardButton, CallbackQuery, InlineKeyboardMarkup, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -117,14 +117,32 @@ class Paginator:
                 self.current_page = callback_data.page
                 await self.update_paginator(call)
 
+    async def send_paginator_by_bot(self, bot: Bot, chat_id: int):
+        await bot.send_message(
+            chat_id=chat_id,
+            text=self.get_text(),
+            reply_markup=self.get_markup()
+        )
+
     async def send_paginator(self, message: Message):
-        await message.answer(
+        await self.send_paginator_by_bot(bot=message.bot, chat_id=message.chat.id)
+
+    async def update_paginator_by_bot(
+            self,
+            bot: Bot,
+            chat_id: int,
+            message_id: int
+    ):
+        await bot.edit_message_text(
+            chat_id=chat_id,
+            message_id=message_id,
             text=self.get_text(),
             reply_markup=self.get_markup()
         )
 
     async def update_paginator(self, call: CallbackQuery):
-        await call.message.edit_text(
-            text=self.get_text(),
-            reply_markup=self.get_markup()
+        await self.update_paginator_by_bot(
+            bot=call.bot,
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id
         )
