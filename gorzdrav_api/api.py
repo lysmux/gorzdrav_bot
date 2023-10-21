@@ -1,3 +1,4 @@
+import logging
 from typing import TypeVar
 from urllib.parse import quote
 
@@ -7,6 +8,8 @@ from pydantic import BaseModel, TypeAdapter
 
 from gorzdrav_api.exceptions import ServerError, ResponseParseError, ApiError
 from gorzdrav_api.schemas import District, Clinic, Speciality, Doctor, Appointment
+
+logger = logging.getLogger("gorzdrav")
 
 cache.setup("mem://")
 
@@ -31,6 +34,8 @@ class GorZdravAPI:
             response_model: type[list[P] | P],
             params: dict[str, str] | None = None,
     ) -> P | list[P]:
+        logger.debug(f"Making a request to the url {url_part}")
+
         try:
             response = await self._http_client.request(
                 method=method,
@@ -40,26 +45,33 @@ class GorZdravAPI:
                 ssl=False,
             )
         except (client_exceptions.ClientConnectionError, client_exceptions.ClientConnectorError) as e:
+            logging.exception("Connection error", exc_info=e)
             raise ServerError(message=e.message)
 
         if response.status != 200:
+            logging.error(f"Server returned http code {response.status}")
             message = await response.text()
             raise ServerError(code=response.status, message=message)
 
         try:
             deserialized_data = await response.json()
         except ContentTypeError as e:
+            logging.exception(f"Deserialization error", exc_info=e)
             raise ResponseParseError(message=e.message)
 
         match deserialized_data["errorCode"]:
             case 0:
+                logger.debug("Data from the api is received")
                 ta = TypeAdapter(response_model)
                 return ta.validate_python(deserialized_data["result"])
             case 39:
+                logger.debug("API returned an empty array")
                 return []
             case _:
                 code = deserialized_data["errorCode"]
                 message = deserialized_data["message"]
+
+                logging.error(f"API returned code {code} with message {message}")
                 raise ApiError(code=code, message=message)
 
     @cache.soft(ttl="24h", soft_ttl="3h")

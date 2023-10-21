@@ -1,4 +1,5 @@
 import secrets
+from enum import StrEnum, auto
 
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
@@ -31,7 +32,23 @@ class RedisSettings(BaseModel):
     password: str | None = None
 
 
+class LogLevel(StrEnum):
+    DEBUG = "DEBUG"
+    INFO = "INFO"
+    ERROR = "ERROR"
+
+    @classmethod
+    def _missing_(cls, value: str):
+        value = value.lower()
+        for member in cls:
+            if member.lower() == value:
+                return member
+        return None
+
+
 class Settings(BaseSettings):
+    log_level: LogLevel = LogLevel.INFO
+
     use_redis: bool = False
     use_webhook: bool = False
     check_every: int = 5
@@ -45,3 +62,5 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         env_nested_delimiter = "__"
+
+        use_enum_values = True

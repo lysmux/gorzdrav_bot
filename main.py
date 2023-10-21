@@ -16,16 +16,10 @@ from bot.utils.set_bot_commands import set_bot_commands
 from config import Settings
 from database.database import create_db_pool
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-)
 logger = logging.getLogger(__name__)
 
 
-async def main():
-    settings = Settings()
-
+async def run(settings: Settings):
     if settings.use_redis:
         redis = Redis(
             host=settings.redis.host,
@@ -67,19 +61,23 @@ async def main():
 
     async with asyncio.TaskGroup() as tg:
         if settings.use_webhook:
-            tg.create_task(run_as_webhook(bot=bot, dispatcher=dp, settings=settings))
+            tg.create_task(run_bot_as_webhook(bot=bot, dispatcher=dp, settings=settings))
         else:
-            tg.create_task(run_as_pooling(bot=bot, dispatcher=dp))
+            tg.create_task(run_bot_as_pooling(bot=bot, dispatcher=dp))
 
         tg.create_task(appointments_checker.run())
 
 
-async def run_as_pooling(bot: Bot, dispatcher: Dispatcher):
+async def run_bot_as_pooling(bot: Bot, dispatcher: Dispatcher):
     await bot.delete_webhook(drop_pending_updates=True)
     await dispatcher.start_polling(bot)
 
 
-async def run_as_webhook(bot: Bot, dispatcher: Dispatcher, settings: Settings):
+async def run_bot_as_webhook(
+        bot: Bot,
+        dispatcher: Dispatcher,
+        settings: Settings
+):
     app = web.Application()
     runner = web.AppRunner(app)
 
@@ -103,12 +101,27 @@ async def run_as_webhook(bot: Bot, dispatcher: Dispatcher, settings: Settings):
         secret_token=settings.webhook.secret,
         drop_pending_updates=True
     )
-    await webhook_site.start()
+
+    try:
+        await webhook_site.start()
+    finally:
+        await runner.cleanup()
+
+
+def main():
+    settings = Settings()
+
+    logging.basicConfig(
+        level=settings.log_level,
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    )
+
+    try:
+        logger.info("Starting GorZdrav bot")
+        asyncio.run(run(settings=settings))
+    except (KeyboardInterrupt, SystemExit):
+        logger.info("GorZdrav bot stopped!")
 
 
 if __name__ == "__main__":
-    try:
-        logger.info("Starting bot")
-        asyncio.run(main())
-    except (KeyboardInterrupt, SystemExit):
-        logger.info("Bot stopped!")
+    main()

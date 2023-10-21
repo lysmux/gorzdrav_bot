@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import pickle
 from itertools import groupby, chain
 
@@ -14,6 +15,8 @@ from database.database import Repository
 from database.models.tracking import Tracking
 from gorzdrav_api.api import GorZdravAPI
 from gorzdrav_api.schemas import Appointment
+
+logger = logging.getLogger("appointments checker")
 
 
 class AppointmentsChecker:
@@ -70,6 +73,8 @@ class AppointmentsChecker:
             return self._is_notified_dict(tracking, appointments)
 
     async def check(self):
+        logger.debug("Search for appointments started")
+
         async with self.database_pool() as session:
             repository = Repository(session)
             all_tracking = await repository.get_all_tracking()
@@ -87,12 +92,15 @@ class AppointmentsChecker:
                 if filtered_appointments:
                     await self.notify(tracking=tracking, appointments=filtered_appointments)
 
+        logger.debug(f"Search for appointments ended. Repeat after {self.check_every} minutes")
+
     async def notify(
             self,
             tracking: Tracking,
             appointments: list[Appointment]
     ):
         if await self.is_notified(tracking, appointments):
+            logger.debug(f"Tracking (ID {tracking.id}) notification has already been sent")
             return
 
         items = appointments_items_factory(
@@ -112,6 +120,8 @@ class AppointmentsChecker:
         )
 
         await paginator.send_paginator_by_bot(bot=self.bot, chat_id=tracking.tg_user_id)
+
+        logger.debug(f"Tracking (ID {tracking.id}) notification sent")
 
     async def run(self):
         while True:

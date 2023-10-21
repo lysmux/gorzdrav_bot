@@ -1,5 +1,3 @@
-import logging
-
 from aiogram import Router
 from aiogram.filters import ExceptionTypeFilter
 from aiogram.types import ErrorEvent
@@ -12,8 +10,6 @@ router = Router()
 
 @router.error(ExceptionTypeFilter(GorZdravError))
 async def server_error_handler(event: ErrorEvent):
-    logging.exception("GorZdrav error", exc_info=event.exception)
-
     if event.update.message:
         chat_id = event.update.message.from_user.id
     else:
