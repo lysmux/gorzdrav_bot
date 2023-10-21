@@ -4,7 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+from aiogram.webhook.aiohttp_server import setup_application, SimpleRequestHandler
 from aiohttp import web
 from redis.asyncio import Redis
 
@@ -82,13 +82,6 @@ async def run_as_pooling(bot: Bot, dispatcher: Dispatcher):
 async def run_as_webhook(bot: Bot, dispatcher: Dispatcher, settings: Settings):
     app = web.Application()
     runner = web.AppRunner(app)
-    await runner.setup()
-
-    webhook_site = web.TCPSite(
-        runner,
-        host=settings.webhook.server_host,
-        port=settings.webhook.server_port
-    )
 
     webhook_requests_handler = SimpleRequestHandler(
         dispatcher=dispatcher,
@@ -97,6 +90,13 @@ async def run_as_webhook(bot: Bot, dispatcher: Dispatcher, settings: Settings):
     )
     webhook_requests_handler.register(app, path=settings.webhook.path)
     setup_application(app, dispatcher, bot=bot)
+
+    await runner.setup()
+    webhook_site = web.TCPSite(
+        runner,
+        host=settings.webhook.server_host,
+        port=settings.webhook.server_port
+    )
 
     await bot.set_webhook(
         url=settings.webhook.url + settings.webhook.path,
