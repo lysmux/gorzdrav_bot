@@ -36,7 +36,10 @@ class RedisPickleStorage(BaseStorage):
 
     @classmethod
     def from_url(
-            cls, url: str, connection_kwargs: dict[str, Any] | None = None, **kwargs: Any
+            cls,
+            url: str,
+            connection_kwargs: dict[str, Any] | None = None,
+            **kwargs: Any
     ) -> "RedisPickleStorage":
         """
         Create an instance of :class:`RedisStorage` with specifying the connection string

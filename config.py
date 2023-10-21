@@ -1,3 +1,5 @@
+import secrets
+
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
@@ -12,22 +14,32 @@ class DatabaseSettings(BaseModel):
 
 class BotSettings(BaseModel):
     token: str
-    use_redis: bool = False
+
+
+class WebhookSettings(BaseModel):
+    url: str
+    path: str
+    secret: str = secrets.token_urlsafe(32)
+
+    server_host: str = "localhost"
+    server_port: int
 
 
 class RedisSettings(BaseModel):
-    host: str
+    host: str = "localhost"
     port: int = 6379
     password: str | None = None
 
 
 class Settings(BaseSettings):
     use_redis: bool = False
+    use_webhook: bool = False
     check_every: int = 5
 
     bot: BotSettings
     db: DatabaseSettings
     redis: RedisSettings
+    webhook: WebhookSettings
 
     class Config:
         env_file = ".env"

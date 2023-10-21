@@ -4,15 +4,17 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+from aiohttp import web
+from redis.asyncio import Redis
 
 from bot import common, gorzdrav
 from bot.middlewares.database import DatabaseMiddleware
 from bot.utils.appointments_checker import AppointmentsChecker
+from bot.utils.redis_storage import RedisPickleStorage
 from bot.utils.set_bot_commands import set_bot_commands
 from config import Settings
 from database.database import create_db_pool
-from misc.redis_storage import Redis
-from misc.redis_storage import RedisPickleStorage
 
 logging.basicConfig(
     level=logging.INFO,
@@ -62,15 +64,46 @@ async def main():
     )
 
     await set_bot_commands(bot)
-    await bot.delete_webhook(drop_pending_updates=True)
 
-    try:
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(dp.start_polling(bot))
-            tg.create_task(appointments_checker.run())
-    finally:
-        await dp.storage.close()
-        await bot.session.close()
+    async with asyncio.TaskGroup() as tg:
+        if settings.use_webhook:
+            tg.create_task(run_as_webhook(bot=bot, dispatcher=dp, settings=settings))
+        else:
+            tg.create_task(run_as_pooling(bot=bot, dispatcher=dp))
+
+        tg.create_task(appointments_checker.run())
+
+
+async def run_as_pooling(bot: Bot, dispatcher: Dispatcher):
+    await bot.delete_webhook(drop_pending_updates=True)
+    await dispatcher.start_polling(bot)
+
+
+async def run_as_webhook(bot: Bot, dispatcher: Dispatcher, settings: Settings):
+    app = web.Application()
+    runner = web.AppRunner(app)
+    await runner.setup()
+
+    webhook_site = web.TCPSite(
+        runner,
+        host=settings.webhook.server_host,
+        port=settings.webhook.server_port
+    )
+
+    webhook_requests_handler = SimpleRequestHandler(
+        dispatcher=dispatcher,
+        bot=bot,
+        secret_token=settings.webhook.secret
+    )
+    webhook_requests_handler.register(app, path=settings.webhook.path)
+    setup_application(app, dispatcher, bot=bot)
+
+    await bot.set_webhook(
+        url=settings.webhook.url + settings.webhook.path,
+        secret_token=settings.webhook.secret,
+        drop_pending_updates=True
+    )
+    await webhook_site.start()
 
 
 if __name__ == "__main__":
