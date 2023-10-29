@@ -11,8 +11,6 @@ from gorzdrav_api.schemas import District, Clinic, Speciality, Doctor, Appointme
 
 logger = logging.getLogger("gorzdrav")
 
-cache.setup("mem://")
-
 P = TypeVar("P", bound=BaseModel)
 
 

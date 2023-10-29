@@ -6,6 +6,7 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.webhook.aiohttp_server import setup_application, SimpleRequestHandler
 from aiohttp import web
+from cashews import cache
 from redis.asyncio import Redis
 
 from bot import common, gorzdrav
@@ -27,9 +28,14 @@ async def run(settings: Settings):
             password=settings.redis.password
         )
         storage = RedisPickleStorage(redis)
+        cache.setup(f"redis://{settings.redis.host}:{settings.redis.port}",
+                    password=settings.redis.password,
+                    socket_connect_timeout=0.1,
+                    retry_on_timeout=True)
     else:
         redis = None
         storage = MemoryStorage()
+        cache.setup("mem://")
 
     database_pool = await create_db_pool(
         host=settings.db.host,
@@ -92,12 +98,12 @@ async def run_bot_as_webhook(
     await runner.setup()
     webhook_site = web.TCPSite(
         runner,
-        host=settings.webhook.server_host,
-        port=settings.webhook.server_port
+        host=settings.webhook.app_host,
+        port=settings.webhook.app_port
     )
 
     await bot.set_webhook(
-        url=settings.webhook.url + settings.webhook.path,
+        url=settings.webhook.host + settings.webhook.path,
         secret_token=settings.webhook.secret,
         drop_pending_updates=True
     )

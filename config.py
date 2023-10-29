@@ -1,7 +1,8 @@
 import secrets
-from enum import StrEnum, auto
+from enum import StrEnum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+from pydantic_core.core_schema import ValidationInfo
 from pydantic_settings import BaseSettings
 
 
@@ -18,12 +19,12 @@ class BotSettings(BaseModel):
 
 
 class WebhookSettings(BaseModel):
-    url: str
-    path: str
+    host: str
+    path: str = "/webhook"
     secret: str = secrets.token_urlsafe(32)
 
-    server_host: str = "localhost"
-    server_port: int
+    app_host: str = "0.0.0.0"
+    app_port: int = 80
 
 
 class RedisSettings(BaseModel):
@@ -55,12 +56,23 @@ class Settings(BaseSettings):
 
     bot: BotSettings
     db: DatabaseSettings
-    redis: RedisSettings
-    webhook: WebhookSettings
+    redis: RedisSettings | None = None
+    webhook: WebhookSettings | None = None
+
+    @field_validator("redis")
+    def check_redis(cls, value, info: ValidationInfo):
+        if info.data.get("use_redis") and value is None:
+            raise ValueError("Settings for Redis should be provided")
+
+    @field_validator("webhook")
+    def check_web_hook(cls, value, info: ValidationInfo):
+        if info.data.get("use_webhook") and value is None:
+            raise ValueError("Settings for WebHook should be provided")
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
-        env_nested_delimiter = "__"
 
+        env_nested_delimiter = "__"
+        env_prefix = "gorzdrav_"
         use_enum_values = True
