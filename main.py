@@ -17,11 +17,12 @@ from bot.utils.set_bot_commands import set_bot_commands
 from config import Settings
 from database.database import create_db_pool
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("main")
 
 
 async def run(settings: Settings):
     if settings.use_redis:
+        logger.debug("Using Redis for cache")
         redis = Redis(
             host=settings.redis.host,
             port=settings.redis.port,
@@ -33,17 +34,12 @@ async def run(settings: Settings):
                     socket_connect_timeout=0.1,
                     retry_on_timeout=True)
     else:
+        logger.debug("Using Memory for cache")
         redis = None
         storage = MemoryStorage()
         cache.setup("mem://")
 
-    database_pool = await create_db_pool(
-        host=settings.db.host,
-        port=settings.db.port,
-        user=settings.db.user,
-        password=settings.db.password,
-        database=settings.db.database,
-    )
+    database_pool = await create_db_pool(settings)
 
     bot = Bot(token=settings.bot.token, parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=storage)
@@ -95,6 +91,12 @@ async def run_bot_as_webhook(
     webhook_requests_handler.register(app, path=settings.webhook.path)
     setup_application(app, dispatcher, bot=bot)
 
+    await bot.set_webhook(
+        url=settings.webhook.host + settings.webhook.path,
+        secret_token=settings.webhook.secret,
+        drop_pending_updates=True
+    )
+
     await runner.setup()
     webhook_site = web.TCPSite(
         runner,
@@ -102,14 +104,10 @@ async def run_bot_as_webhook(
         port=settings.webhook.app_port
     )
 
-    await bot.set_webhook(
-        url=settings.webhook.host + settings.webhook.path,
-        secret_token=settings.webhook.secret,
-        drop_pending_updates=True
-    )
-
+    logger.info(f"WebHook server is running on {settings.webhook.app_host}:{settings.webhook.app_port}")
     try:
         await webhook_site.start()
+        await asyncio.Event().wait()
     finally:
         await runner.cleanup()
 
@@ -123,10 +121,10 @@ def main():
     )
 
     try:
-        logger.info("Starting GorZdrav bot")
+        logger.info("GorZdrav bot is running")
         asyncio.run(run(settings=settings))
     except (KeyboardInterrupt, SystemExit):
-        logger.info("GorZdrav bot stopped!")
+        logger.info("GorZdrav bot stopped")
 
 
 if __name__ == "__main__":
