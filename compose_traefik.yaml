@@ -1,0 +1,105 @@
+x-bot-token: &bot_token BOT_TOKEN
+
+x-db-user: &db_user postgres
+x-db-password: &db_password DB_PASSWORD
+x-db-name: &db_name gorzdrav
+
+x-redis-password: &redis_password REDIS_PASSWORD
+
+x-webhook-host: &webhook_host WEBHOOK_HOST
+x-webhook-path: &webhook_path /gorzdrav_webhook
+
+x-app-port: &app_port 8000
+
+services:
+  bot:
+    build: .
+    container_name: gorzdrav_bot
+    restart: always
+
+    environment:
+      GORZDRAV_BOT__TOKEN: *bot_token
+
+      GORZDRAV_DB__HOST: gorzdrav_bot-db
+      GORZDRAV_DB__USER: *db_user
+      GORZDRAV_DB__PASSWORD: *db_password
+      GORZDRAV_DB__DATABASE: *db_name
+
+      GORZDRAV_USE_REDIS: True
+      GORZDRAV_REDIS__HOST: gorzdrav_bot-redis
+      GORZDRAV_REDIS__PASSWORD: *db_password
+
+      GORZDRAV_USE_WEBHOOK: True
+      GORZDRAV_WEBHOOK__HOST: *webhook_host
+      GORZDRAV_WEBHOOK_PATH: *webhook_path
+
+      GORZDRAV_WEBHOOK__APP_PORT: *app_port
+
+    networks:
+      - proxy
+      - internal
+
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gorzdrav_bot.entrypoints=https"
+      - "traefik.http.routers.gorzdrav_bot.rule=Host(`WEBHOOK_HOST`) && && Path(`WEBHOOK_PATH`)"
+      - "traefik.http.services.gorzdrav_bot.loadbalancer.server.port=8000"
+      - "traefik.http.routers.gorzdrav_bot.tls.certresolver=letsEncrypt"
+      - "traefik.docker.network=proxy"
+
+  db:
+    image: postgres:16-alpine
+    container_name: gorzdrav_bot-db
+    restart: always
+
+    user: postgres
+
+    environment:
+      POSTGRES_DB: *db_name
+      POSTGRES_PASSWORD: *db_password
+      POSTGRES_USER: *db_user
+
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: gorzdrav_bot-redis
+    restart: always
+
+    environment:
+      REDIS_PASSWORD: *redis_password
+
+    volumes:
+      - redis-data:/data
+
+    networks:
+      - internal
+
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+volumes:
+  db-data:
+  redis-data:
+
+networks:
+  internal:
+  proxy:
+    external: true
