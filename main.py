@@ -11,9 +11,9 @@ from redis.asyncio import Redis
 
 from bot import common, gorzdrav
 from bot.middlewares.database import DatabaseMiddleware
-from bot.utils.appointments_checker import AppointmentsChecker
+from bot.services.appointments_checker import AppointmentsChecker
 from bot.utils.redis_storage import RedisPickleStorage
-from bot.utils.set_bot_commands import set_bot_commands
+from bot.services.set_bot_commands import set_bot_commands
 from config import Settings
 from database.database import create_db_pool
 
