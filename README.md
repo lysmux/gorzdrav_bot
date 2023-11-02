@@ -32,7 +32,21 @@ The settings should be in the .env file or in the environment variables
 * **GORZDRAV_REDIS__PASSWORD** - (str) Redis password (default: None)
 
 #### Webhook settings
-* **GORZDRAV_WEBHOOK__HOST** - (str) Webhook host (https://example.com[:PORT])
+* **GORZDRAV_WEBHOOK__DOMAIN** - (str) Webhook domain (example.com[:PORT])
 * **GORZDRAV_WEBHOOK__PATH** - (str) Webhook path (default: /webhook)
 * **GORZDRAV_WEBHOOK__APP_HOST** - (str) Webhook app interface (default: 0.0.0.0)
 * **GORZDRAV_WEBHOOK__APP_PORT** - (int) Webhook app port (default: 80)
+
+## How to run :hammer_and_wrench:
+```
+git clone https://github.com/Kllraz/gorzdrav_bot
+cd gorzdrav_bot
+```
+
+Create .env file and fill it with the settings
+
+Run `docker compose up -d`
+
+If you`re using Traefik as the reverse proxy, check the network and the certificate resolver in compose.taefik.yaml
+
+Run `docker compose -f compose.yaml -f compose.traefik.yaml up -d`
