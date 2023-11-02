@@ -92,7 +92,7 @@ async def run_bot_as_webhook(
     setup_application(app, dispatcher, bot=bot)
 
     await bot.set_webhook(
-        url=settings.webhook.host + settings.webhook.path,
+        url=settings.webhook.url,
         secret_token=settings.webhook.secret,
         drop_pending_updates=True
     )

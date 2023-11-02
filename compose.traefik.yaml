@@ -1,0 +1,17 @@
+# Using webhook with Traefik reverse proxy
+
+services:
+  bot:
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gorzdrav_bot.entrypoints=https"
+      - "traefik.http.routers.gorzdrav_bot.rule=Host(`$GORZDRAV_WEBHOOK__DOMAIN`) && Path(`$GORZDRAV_WEBHOOK__PATH`)"
+      - "traefik.http.services.gorzdrav_bot.loadbalancer.server.port=$GORZDRAV_WEBHOOK__APP_PORT"
+      - "traefik.http.routers.gorzdrav_bot.tls.certresolver=letsEncrypt"
+      - "traefik.docker.network=proxy"
+
+networks:
+  proxy:
+    external: True

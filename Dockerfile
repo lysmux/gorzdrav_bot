@@ -13,17 +13,8 @@ RUN python -m pip install --no-cache-dir poetry==$POETRY_VERSION \
     && poetry config virtualenvs.in-project true \
     && poetry install --without dev --no-interaction --no-ansi
 
+
 FROM python:3.11.6-alpine
-
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    app
-
-USER app
 
 WORKDIR /app
 
@@ -33,7 +24,13 @@ ENV PYTHONFAULTHANDLER=1 \
 COPY --from=builder /app .
 COPY . ./
 
-#ENV GORZDRAV_WEBHOOK__APP_PORT=8080
-#EXPOSE $GORZDRAV_WEBHOOK__APP_PORT
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    app
+USER app
 
 CMD [".venv/bin/python", "main.py"]
