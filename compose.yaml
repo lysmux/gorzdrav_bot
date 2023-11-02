@@ -6,13 +6,22 @@ services:
       context: ./
       dockerfile: Dockerfile
     restart: always
+    user: app
+
+    security_opt:
+      - no-new-privileges=true
+    cap_drop:
+      - ALL
+
     env_file:
       - .env
     environment:
       GORZDRAV_DB__HOST: db
       GORZDRAV_REDIS__HOST: redis
+
     networks:
       - internal
+
     depends_on:
       db:
         condition: service_healthy
@@ -21,17 +30,27 @@ services:
 
   db:
     image: postgres:16-alpine
+    restart: always
     user: postgres
+
+    security_opt:
+      - no-new-privileges=true
+    cap_drop:
+      - ALL
+
     env_file:
       - .env
     environment:
       POSTGRES_USER: ${GORZDRAV_DB__USER}
       POSTGRES_PASSWORD: ${GORZDRAV_DB__PASSWORD}
       POSTGRES_DATABASE: ${GORZDRAV_DB__DATABASE}
+
     volumes:
       - db-data:/var/lib/postgresql/data
+
     networks:
       - internal
+
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       start_period: 5s
@@ -41,14 +60,24 @@ services:
 
   redis:
     image: redis:7-alpine
+    restart: always
     user: redis
+
+    security_opt:
+      - no-new-privileges=true
+    cap_drop:
+      - ALL
+
     env_file:
       - .env
     command: --requirepass ${GORZDRAV_REDIS__PASSWORD}
+
     volumes:
       - redis-data:/data
+
     networks:
       - internal
+
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
       start_period: 5s
