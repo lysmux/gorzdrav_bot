@@ -61,7 +61,7 @@ window = Window(
     Case(
         {
             False: Jinja("gorzdrav/tracking/tracking/status.html"),
-            True: Jinja("gorzdrav/appointment/no_appointments.html"),
+            True: Jinja("gorzdrav/appointment/appointment/no_appointments.html"),
         },
         selector=F["filtered_appointments"].len() == 0
     ),
