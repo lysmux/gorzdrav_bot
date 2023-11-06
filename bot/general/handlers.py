@@ -17,8 +17,3 @@ async def start_handler(message: Message, dialog_manager: DialogManager):
 @router.message(Command("help"))
 async def help_handler(message: Message):
     await message.answer(text=render_template("general/help.html"))
-
-
-@router.message()
-async def unknown_command_handler(message: Message):
-    await message.answer(text=render_template("general/unknown_command.html", command=message.text))

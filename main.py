@@ -52,8 +52,9 @@ async def run(settings: Settings):
     dp = Dispatcher(storage=storage)
 
     dp.include_routers(
-        gorzdrav.router,
         general.router,
+        gorzdrav.router,
+
     )
 
     dp.message.middleware(DatabaseMiddleware(database_pool))
