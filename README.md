@@ -1,4 +1,5 @@
 # GorZdrav bot :sparkles:
+https://t.me/tracking_gorzdrav_bot
 
 Telegram bot that tracks appointments on GorZdrav and notifies the user
 
