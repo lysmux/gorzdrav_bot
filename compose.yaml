@@ -43,7 +43,7 @@ services:
     environment:
       POSTGRES_USER: ${GORZDRAV_DB__USER}
       POSTGRES_PASSWORD: ${GORZDRAV_DB__PASSWORD}
-      POSTGRES_DATABASE: ${GORZDRAV_DB__DATABASE}
+      POSTGRES_DB: ${GORZDRAV_DB__DATABASE}
 
     volumes:
       - db-data:/var/lib/postgresql/data
