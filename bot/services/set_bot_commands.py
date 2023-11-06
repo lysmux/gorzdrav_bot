@@ -2,11 +2,10 @@ from aiogram import Bot
 from aiogram.types import BotCommand
 
 commands = {
-    "start": "Об этом боте",
-    "cancel": "Отменить текущую операцию",
+    "start": "Главное меню",
     "help": "Помощь",
-    "make_appointment": "Записаться к врачу",
-    "tracking": "Список отслеживаний"
+    "appointment": "Записаться к врачу",
+    "tracking": "Отслеживания"
 }
 
 

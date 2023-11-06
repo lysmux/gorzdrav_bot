@@ -15,7 +15,7 @@ class District(Model):
 
 class Clinic(Model):
     id: str
-    address: str
+    address: str | None
     full_name: str = Field(alias="lpuFullName")
     short_name: str = Field(alias="lpuShortName")
 
@@ -28,6 +28,7 @@ class Speciality(Model):
 class Doctor(Model):
     id: str
     name: str
+    area: str | None = Field(alias="ariaNumber")
     free_appointments: int = Field(alias="freeParticipantCount")
 
     @computed_field

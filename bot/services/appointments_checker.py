@@ -1,20 +1,19 @@
 import asyncio
 import logging
-import pickle
-from itertools import groupby, chain
+from itertools import groupby
 
-from aiogram import Bot, Dispatcher
-from redis.asyncio import Redis
+from aiogram import Bot
+from aiogram.fsm.storage.base import StorageKey, BaseStorage
+from aiogram_dialog import BgManagerFactory, StartMode
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from bot.gorzdrav.keyboards.inline import remove_tracking_mp
-from bot.gorzdrav.keyboards.paginator_items import appointments_items_factory
-from bot.utils.inline_paginator import Paginator
-from bot.utils.template_engine import render_template
+from bot.gorzdrav.dialogs.new_appointment.states import NewAppointmentStates
 from database.database import Repository
 from database.models.tracking import Tracking
 from gorzdrav_api.api import GorZdravAPI
+from gorzdrav_api.exceptions import GorZdravError
 from gorzdrav_api.schemas import Appointment
+from gorzdrav_api.utils import filter_appointments
 
 logger = logging.getLogger("appointments checker")
 
@@ -22,55 +21,40 @@ logger = logging.getLogger("appointments checker")
 class AppointmentsChecker:
     def __init__(
             self,
-            dispatcher: Dispatcher,
             bot: Bot,
+            manager_factory: BgManagerFactory,
+            storage: BaseStorage,
             database_pool: async_sessionmaker,
             check_every: int,
-            redis: Redis | None = None
     ):
         self.bot = bot
-        self.dispatcher = dispatcher
+        self.manager_factory = manager_factory
+        self.storage = storage
         self.database_pool = database_pool
         self.check_every = check_every
-
-        self.redis = redis
-        self.already_notified = {}
-
-    def _is_notified_dict(
-            self,
-            tracking: Tracking,
-            appointments: list[Appointment]
-    ):
-        if self.already_notified.get(tracking.id) == appointments:
-            return True
-
-        self.already_notified[tracking.id] = appointments
-        return False
-
-    async def _is_notified_redis(
-            self,
-            tracking: Tracking,
-            appointments: list[Appointment]
-    ):
-        key = f"appointments_checker:{tracking.id}"
-        value = await self.redis.get(key)
-        if value:
-            last_appointments = pickle.loads(value)
-            if last_appointments == appointments:
-                return True
-
-        await self.redis.set(key, pickle.dumps(appointments, protocol=pickle.HIGHEST_PROTOCOL))
-        return False
 
     async def is_notified(
             self,
             tracking: Tracking,
             appointments: list[Appointment]
     ):
-        if self.redis:
-            return await self._is_notified_redis(tracking, appointments)
-        else:
-            return self._is_notified_dict(tracking, appointments)
+        key = StorageKey(
+            bot_id=self.bot.id,
+            chat_id=tracking.tg_user_id,
+            user_id=tracking.tg_user_id,
+            destiny=f"checker:{tracking.id}"
+        )
+        data = await self.storage.get_data(key)
+        last_appointments = data.get("last_appointments")
+
+        if last_appointments == appointments:
+            return True
+
+        await self.storage.set_data(
+            key=key,
+            data={"last_appointments": appointments}
+        )
+        return False
 
     async def check(self):
         logger.debug("Search for appointments started")
@@ -83,14 +67,25 @@ class AppointmentsChecker:
         for key, group in grouped_tracking:
             clinic, doctor = key
             async with GorZdravAPI() as api:
-                appointments = await api.get_appointments(clinic=clinic, doctor=doctor)
+                try:
+                    appointments = await api.get_appointments(
+                        clinic=clinic,
+                        doctor=doctor
+                    )
+                except GorZdravError:
+                    continue
 
             for tracking in group:
-                hours = set(chain.from_iterable((range(*i) for i in tracking.time_ranges)))
-                filtered_appointments = list(filter(lambda x: x.time.hour in hours, appointments))
+                filtered_appointments = filter_appointments(
+                    appointments=appointments,
+                    time_ranges=tracking.time_ranges
+                )
 
                 if filtered_appointments:
-                    await self.notify(tracking=tracking, appointments=filtered_appointments)
+                    await self.notify(
+                        tracking=tracking,
+                        appointments=filtered_appointments
+                    )
 
         logger.debug(f"Search for appointments ended. Repeat after {self.check_every} minutes")
 
@@ -103,23 +98,16 @@ class AppointmentsChecker:
             logger.debug(f"Tracking (ID {tracking.id}) notification has already been sent")
             return
 
-        items = appointments_items_factory(
-            district=tracking.district,
-            clinic=tracking.clinic,
-            speciality=tracking.speciality,
-            doctor=tracking.doctor,
-            appointments=appointments
+        manager = self.manager_factory.bg(
+            bot=self.bot,
+            user_id=tracking.tg_user_id,
+            chat_id=tracking.tg_user_id
         )
-
-        paginator = Paginator(
-            router=self.dispatcher,
-            name="appointments",
-            header_text=render_template("gorzdrav/tracking/new_appointments.html", tracking=tracking),
-            items=items,
-            static_markup=remove_tracking_mp(tracking)
+        await manager.start(
+            NewAppointmentStates.notify,
+            data={"tracking": tracking},
+            mode=StartMode.NEW_STACK
         )
-
-        await paginator.send_paginator_by_bot(bot=self.bot, chat_id=tracking.tg_user_id)
 
         logger.debug(f"Tracking (ID {tracking.id}) notification sent")
 

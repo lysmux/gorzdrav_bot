@@ -1,7 +1,8 @@
 import json
+from itertools import chain
 from urllib.parse import quote
 
-from gorzdrav_api.schemas import District, Clinic, Speciality, Doctor
+from gorzdrav_api.schemas import District, Clinic, Speciality, Doctor, Appointment
 
 
 def generate_gorzdrav_url(
@@ -23,3 +24,17 @@ def generate_gorzdrav_url(
     params = quote(params, safe="/,+:=")
 
     return base_url + params
+
+
+def filter_appointments(
+        appointments: list[Appointment],
+        time_ranges: list[list[int]]
+) -> list[Appointment]:
+    hours = set(chain.from_iterable(
+        (range(*i) for i in time_ranges)
+    ))
+    filtered_appointments = list(filter(
+        lambda x: x.time.hour in hours, appointments
+    ))
+
+    return filtered_appointments

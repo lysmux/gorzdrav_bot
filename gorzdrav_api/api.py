@@ -72,7 +72,7 @@ class GorZdravAPI:
                 logging.error(f"API returned code {code} with message {message}")
                 raise ApiError(code=code, message=message)
 
-    @cache.soft(ttl="24h", soft_ttl="3h")
+    @cache.soft(ttl="24h", soft_ttl="3h", key="districts")
     async def get_districts(self) -> list[District]:
         return await self.make_request(
             method="GET",
@@ -80,7 +80,7 @@ class GorZdravAPI:
             response_model=list[District]
         )
 
-    @cache.soft(ttl="24h", soft_ttl="3h")
+    @cache.soft(ttl="24h", soft_ttl="3h", key="clinics:{district.id}")
     async def get_clinics(self, district: District) -> list[Clinic]:
         return await self.make_request(
             method="GET",
@@ -88,7 +88,7 @@ class GorZdravAPI:
             response_model=list[Clinic]
         )
 
-    @cache.soft(ttl="24h", soft_ttl="3h")
+    @cache.soft(ttl="24h", soft_ttl="3h", key="specialities:{clinic.id}")
     async def get_specialities(self, clinic: Clinic) -> list[Speciality]:
         return await self.make_request(
             method="GET",
@@ -96,6 +96,7 @@ class GorZdravAPI:
             response_model=list[Speciality]
         )
 
+    @cache(ttl="3m", key="doctors:{clinic.id}:{speciality.id}")
     async def get_doctors(self, clinic: Clinic, speciality: Speciality) -> list[Doctor]:
         speciality_id = quote(speciality.id, safe="")
 
@@ -105,6 +106,7 @@ class GorZdravAPI:
             response_model=list[Doctor]
         )
 
+    @cache(ttl="3m", key="appointments:{clinic.id}:{doctor.id}")
     async def get_appointments(self, clinic: Clinic, doctor: Doctor) -> list[Appointment]:
         return await self.make_request(
             method="GET",

@@ -1,6 +1,6 @@
 from aiogram import Router
 
-from bot.gorzdrav import handlers, dialogs
+from bot.general import handlers, dialogs
 
 router = Router()
 

@@ -4,16 +4,21 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.storage.redis import DefaultKeyBuilder
 from aiogram.webhook.aiohttp_server import setup_application, SimpleRequestHandler
+from aiogram_dialog import setup_dialogs
+from aiogram_dialog.widgets.text.jinja import JINJA_ENV_FIELD
 from aiohttp import web
 from cashews import cache
 from redis.asyncio import Redis
 
-from bot import common, gorzdrav
+from bot import general, gorzdrav
 from bot.middlewares.database import DatabaseMiddleware
+from bot.middlewares.gorzdrav_api import GorZdravAPIMiddleware
 from bot.services.appointments_checker import AppointmentsChecker
-from bot.utils.redis_storage import RedisPickleStorage
 from bot.services.set_bot_commands import set_bot_commands
+from bot.utils.redis_storage import RedisPickleStorage
+from bot.utils.template_engine import env as jinja_env
 from config import Settings
 from database.database import create_db_pool
 
@@ -28,14 +33,16 @@ async def run(settings: Settings):
             port=settings.redis.port,
             password=settings.redis.password
         )
-        storage = RedisPickleStorage(redis)
-        cache.setup(f"redis://{settings.redis.host}:{settings.redis.port}",
-                    password=settings.redis.password,
-                    socket_connect_timeout=0.1,
-                    retry_on_timeout=True)
+        storage = RedisPickleStorage(redis, key_builder=DefaultKeyBuilder(with_destiny=True))
+        cache.setup(
+            f"redis://{settings.redis.host}:{settings.redis.port}",
+            password=settings.redis.password,
+            socket_connect_timeout=0.1,
+            retry_on_timeout=True,
+            client_side=True
+        )
     else:
         logger.debug("Using Memory for cache")
-        redis = None
         storage = MemoryStorage()
         cache.setup("mem://")
 
@@ -46,17 +53,24 @@ async def run(settings: Settings):
 
     dp.include_routers(
         gorzdrav.router,
-        common.router,
+        general.router,
     )
+
     dp.message.middleware(DatabaseMiddleware(database_pool))
     dp.callback_query.middleware(DatabaseMiddleware(database_pool))
 
+    dp.message.middleware(GorZdravAPIMiddleware())
+    dp.callback_query.middleware(GorZdravAPIMiddleware())
+
+    manager_factory = setup_dialogs(dp)
+    setattr(bot, JINJA_ENV_FIELD, jinja_env)
+
     appointments_checker = AppointmentsChecker(
         bot=bot,
-        dispatcher=dp,
+        manager_factory=manager_factory,
+        storage=dp.storage,
         database_pool=database_pool,
         check_every=settings.check_every,
-        redis=redis
     )
 
     await set_bot_commands(bot)

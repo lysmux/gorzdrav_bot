@@ -1,0 +1,6 @@
+{% set tracking = item[1] %}
+📝 ID: {{ tracking.id }} к {{ tracking.speciality.name }} {{ tracking.doctor.name }} в {{ tracking.clinic.full_name }} <i>
+{%- for time_range in tracking.time_ranges -%}
+    с {{ time_range[0] }} до {{ time_range[1] }}{{ ", " if not loop.last else "" }}
+{%- endfor -%}
+</i>

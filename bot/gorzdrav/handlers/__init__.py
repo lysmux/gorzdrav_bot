@@ -1,9 +1,9 @@
 from aiogram import Router
 
-from bot.gorzdrav.handlers import errors, search_doctor, add_tracking, manage_tracking
+from bot.gorzdrav.handlers import common, errors
 
 router = Router()
-router.include_routers(search_doctor.router,
-                       add_tracking.router,
-                       manage_tracking.router,
-                       errors.router)
+router.include_routers(
+    common.router,
+    errors.router
+)
