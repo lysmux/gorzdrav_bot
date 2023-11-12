@@ -1,12 +1,15 @@
-from aiogram import Router
-from aiogram.filters import Command
+from aiogram import Router, F
+from aiogram.filters import Command, or_f
 
 from bot.general import handlers, dialogs
 
 router = Router()
 
 router.message.filter(
-    Command(commands=["start", "help"])
+    or_f(
+        Command(commands=["start", "help"]),
+        ~F.text.startswith("/")
+    )
 )
 
 router.include_routers(
