@@ -6,6 +6,7 @@ from pathlib import Path
 from pydantic import BaseModel, field_validator, computed_field
 from pydantic_core.core_schema import ValidationInfo
 from pydantic_settings import BaseSettings
+from sqlalchemy import URL
 
 
 class LogLevel(StrEnum):
@@ -32,6 +33,18 @@ class DatabaseSettings(BaseModel):
     user: str
     password: str
     database: str
+
+    @computed_field
+    @property
+    def url(self) -> str:
+        return URL.create(
+            drivername="postgresql+asyncpg",
+            host=self.host,
+            port=self.port,
+            username=self.user,
+            password=self.password,
+            database=self.database
+        ).render_as_string(hide_password=False)
 
 
 class RedisSettings(BaseModel):
@@ -86,3 +99,6 @@ class Settings(BaseSettings):
 
         env_nested_delimiter = "__"
         env_prefix = "gorzdrav_"
+
+
+settings = Settings()

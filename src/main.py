@@ -19,13 +19,13 @@ from bot.services.appointments_checker import AppointmentsChecker
 from bot.services.set_bot_commands import set_bot_commands
 from bot.utils.redis_storage import RedisPickleStorage
 from bot.utils.template_engine import env as jinja_env
-from config import Settings
+from config import settings
 from database.database import create_db_pool
 
 logger = logging.getLogger("main")
 
 
-async def run(settings: Settings):
+async def run():
     if settings.use_redis:
         logger.debug("Using Redis for cache")
         redis = Redis(
@@ -46,7 +46,7 @@ async def run(settings: Settings):
         storage = MemoryStorage()
         cache.setup("mem://")
 
-    database_pool = await create_db_pool(settings)
+    database_pool = await create_db_pool()
 
     bot = Bot(token=settings.bot.token, parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=storage)
@@ -77,7 +77,7 @@ async def run(settings: Settings):
 
     async with asyncio.TaskGroup() as tg:
         if settings.use_webhook:
-            tg.create_task(run_bot_as_webhook(bot=bot, dispatcher=dp, settings=settings))
+            tg.create_task(run_bot_as_webhook(bot=bot, dispatcher=dp))
         else:
             tg.create_task(run_bot_as_pooling(bot=bot, dispatcher=dp))
 
@@ -92,7 +92,6 @@ async def run_bot_as_pooling(bot: Bot, dispatcher: Dispatcher):
 async def run_bot_as_webhook(
         bot: Bot,
         dispatcher: Dispatcher,
-        settings: Settings
 ):
     app = web.Application()
     runner = web.AppRunner(app)
@@ -127,8 +126,6 @@ async def run_bot_as_webhook(
 
 
 def main():
-    settings = Settings()
-
     logging.basicConfig(
         level=settings.log_level,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
@@ -136,7 +133,7 @@ def main():
 
     try:
         logger.info("GorZdrav bot is running")
-        asyncio.run(run(settings=settings))
+        asyncio.run(run())
     except (KeyboardInterrupt, SystemExit):
         logger.info("GorZdrav bot stopped")
 
