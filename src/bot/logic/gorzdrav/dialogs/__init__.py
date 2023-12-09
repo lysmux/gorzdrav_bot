@@ -1,10 +1,11 @@
-from aiogram import Router
+from . import (
+    appointment,
+    add_tracking,
+    manage_tracking,
+    new_appointment
+)
 
-from src.bot.logic.gorzdrav.dialogs import manage_tracking, add_tracking, appointment, new_appointment
-
-router = Router()
-
-router.include_routers(
+routers = (
     appointment.dialog,
     add_tracking.dialog,
     manage_tracking.dialog,

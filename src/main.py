@@ -13,27 +13,29 @@ from cashews import cache
 from redis.asyncio import Redis
 
 from bot.logic import general, gorzdrav
-from bot.middlewares.database import DatabaseMiddleware
-from bot.middlewares.gorzdrav_api import GorZdravAPIMiddleware
-from bot.services.appointments_checker import AppointmentsChecker
 from bot.services.set_bot_commands import set_bot_commands
 from bot.utils.redis_storage import RedisPickleStorage
 from bot.utils.template_engine import env as jinja_env
 from config import settings
-from database.database import create_db_pool
+from src.bot.services.appointments_checker import AppointmentsChecker
+from src.bot.structures.context import ContextData
+from src.database.database import get_engine
 
 logger = logging.getLogger("main")
 
 
-async def run():
+def get_storage():
     if settings.use_redis:
-        logger.debug("Using Redis for cache")
+        logger.info("Using Redis for cache")
         redis = Redis(
             host=settings.redis.host,
             port=settings.redis.port,
             password=settings.redis.password
         )
-        storage = RedisPickleStorage(redis, key_builder=DefaultKeyBuilder(with_destiny=True))
+        storage = RedisPickleStorage(
+            redis,
+            key_builder=DefaultKeyBuilder(with_destiny=True)
+        )
         cache.setup(
             f"redis://{settings.redis.host}:{settings.redis.port}",
             password=settings.redis.password,
@@ -42,79 +44,99 @@ async def run():
             client_side=True
         )
     else:
-        logger.debug("Using Memory for cache")
+        logger.info("Using Memory for cache")
         storage = MemoryStorage()
         cache.setup("mem://")
 
-    database_pool = await create_db_pool()
+    return storage
 
-    bot = Bot(token=settings.bot.token, parse_mode=ParseMode.HTML)
+
+async def run_bot():
+    storage = get_storage()
+    engine = get_engine()
+
+    # setup dispatcher
     dp = Dispatcher(storage=storage)
-
     dp.include_routers(
-        general.router,
-        gorzdrav.router
+        general.get_router(),
+        gorzdrav.get_router()
     )
 
-    dp.message.middleware(DatabaseMiddleware(database_pool))
-    dp.callback_query.middleware(DatabaseMiddleware(database_pool))
-
-    dp.message.middleware(GorZdravAPIMiddleware())
-    dp.callback_query.middleware(GorZdravAPIMiddleware())
-
-    manager_factory = setup_dialogs(dp)
+    # setup bot
+    bot = Bot(token=settings.bot.token, parse_mode=ParseMode.HTML)
     setattr(bot, JINJA_ENV_FIELD, jinja_env)
+    await set_bot_commands(bot)
 
+    # setup aiogram dialogs
+    aiod_manager_factory = setup_dialogs(dp)
+
+    # setup appointments checker
     appointments_checker = AppointmentsChecker(
         bot=bot,
-        manager_factory=manager_factory,
-        storage=dp.storage,
-        database_pool=database_pool,
+        manager_factory=aiod_manager_factory,
+        storage=storage,
+        db_engine=engine,
         check_every=settings.check_every,
     )
 
-    await set_bot_commands(bot)
-
+    # run
     async with asyncio.TaskGroup() as tg:
         if settings.use_webhook:
-            tg.create_task(run_bot_as_webhook(bot=bot, dispatcher=dp))
+            task = run_as_webhook(
+                bot=bot,
+                dispatcher=dp,
+                context_data=ContextData(engine=engine)
+            )
         else:
-            tg.create_task(run_bot_as_pooling(bot=bot, dispatcher=dp))
+            task = run_as_pooling(
+                bot=bot,
+                dispatcher=dp,
+                context_data=ContextData(engine=engine)
+            )
 
+        tg.create_task(task)
         tg.create_task(appointments_checker.run())
 
 
-async def run_bot_as_pooling(bot: Bot, dispatcher: Dispatcher):
-    await bot.delete_webhook(drop_pending_updates=True)
-    await dispatcher.start_polling(bot)
-
-
-async def run_bot_as_webhook(
+async def run_as_pooling(
         bot: Bot,
         dispatcher: Dispatcher,
+        context_data: ContextData
+):
+    await bot.delete_webhook(drop_pending_updates=True)
+    await dispatcher.start_polling(bot, **context_data)
+
+
+async def run_as_webhook(
+        bot: Bot,
+        dispatcher: Dispatcher,
+        context_data: ContextData
 ):
     app = web.Application()
     runner = web.AppRunner(app)
 
-    webhook_requests_handler = SimpleRequestHandler(
-        dispatcher=dispatcher,
-        bot=bot,
-        secret_token=settings.webhook.secret
-    )
-    webhook_requests_handler.register(app, path=settings.webhook.path)
-    setup_application(app, dispatcher, bot=bot)
-
-    await bot.set_webhook(
-        url=settings.webhook.url,
-        secret_token=settings.webhook.secret,
-        drop_pending_updates=True
-    )
-
+    # setup aiohttp server
     await runner.setup()
     webhook_site = web.TCPSite(
         runner,
         host=settings.webhook.app_host,
         port=settings.webhook.app_port
+    )
+
+    # setup requests handler
+    webhook_requests_handler = SimpleRequestHandler(
+        dispatcher=dispatcher,
+        bot=bot,
+        secret_token=settings.webhook.secret,
+        **context_data
+    )
+    webhook_requests_handler.register(app, path=settings.webhook.path)
+    setup_application(app, dispatcher)
+
+    await bot.set_webhook(
+        url=settings.webhook.url,
+        secret_token=settings.webhook.secret,
+        drop_pending_updates=True
     )
 
     logger.info(f"WebHook server is running on {settings.webhook.app_host}:{settings.webhook.app_port}")
@@ -133,7 +155,7 @@ def main():
 
     try:
         logger.info("GorZdrav bot is running")
-        asyncio.run(run())
+        asyncio.run(run_bot())
     except (KeyboardInterrupt, SystemExit):
         logger.info("GorZdrav bot stopped")
 

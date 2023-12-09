@@ -5,7 +5,7 @@ from itertools import groupby
 from aiogram import Bot
 from aiogram.fsm.storage.base import StorageKey, BaseStorage
 from aiogram_dialog import BgManagerFactory, StartMode
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncEngine, AsyncSession
 
 from src.bot.logic.gorzdrav.dialogs.new_appointment.states import NewAppointmentStates
 from src.database.models.tracking import Tracking
@@ -24,13 +24,13 @@ class AppointmentsChecker:
             bot: Bot,
             manager_factory: BgManagerFactory,
             storage: BaseStorage,
-            database_pool: async_sessionmaker,
+            db_engine: AsyncEngine,
             check_every: int,
     ):
         self.bot = bot
         self.manager_factory = manager_factory
         self.storage = storage
-        self.database_pool = database_pool
+        self.db_engine = db_engine
         self.check_every = check_every
 
     async def is_notified(
@@ -59,7 +59,7 @@ class AppointmentsChecker:
     async def check(self):
         logger.debug("Search for appointments started")
 
-        async with self.database_pool() as session:
+        async with AsyncSession(self.db_engine) as session:
             repository = TrackingRepo(session)
             all_tracking = await repository.get_all_tracking()
 

@@ -1,10 +1,3 @@
-from aiogram import Router
+from . import common, errors
 
-from src.bot.logic.gorzdrav.handlers import errors
-from src.bot.logic.gorzdrav.handlers import common
-
-router = Router()
-router.include_routers(
-    common.router,
-    errors.router
-)
+routers = (common.router, errors.router)
