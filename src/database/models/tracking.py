@@ -1,12 +1,12 @@
 from sqlalchemy import Integer, BigInteger, ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.database.models.base import Base
-from src.database.types import PydanticType
-from src.gorzdrav_api import schemas
+from gorzdrav_api import schemas
+from . import BaseModel
+from ..types import PydanticType
 
 
-class Tracking(Base):
+class TrackingModel(BaseModel):
     __tablename__ = "tracking"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

@@ -5,17 +5,17 @@ from itertools import groupby
 from aiogram import Bot
 from aiogram.fsm.storage.base import StorageKey, BaseStorage
 from aiogram_dialog import BgManagerFactory, StartMode
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
-from src.bot.logic.gorzdrav.dialogs.new_appointment.states import NewAppointmentStates
-from src.database.models.tracking import Tracking
-from src.database.repositories.tracking import TrackingRepo
-from src.gorzdrav_api.api import GorZdravAPI
-from src.gorzdrav_api.exceptions import GorZdravError
-from src.gorzdrav_api.schemas import Appointment
-from src.gorzdrav_api.utils import filter_appointments
+from bot.logic.new_appointments.states import NewAppointmentsStates
+from database.models import TrackingModel
+from database.repositories import TrackingRepo
+from gorzdrav_api import GorZdravAPI
+from gorzdrav_api.exceptions import GorZdravError
+from gorzdrav_api.schemas import Appointment
+from gorzdrav_api.utils import filter_appointments
 
-logger = logging.getLogger("appointments checker")
+logger = logging.getLogger("Appointments checker")
 
 
 class AppointmentsChecker:
@@ -24,20 +24,20 @@ class AppointmentsChecker:
             bot: Bot,
             manager_factory: BgManagerFactory,
             storage: BaseStorage,
-            database_pool: async_sessionmaker,
+            db_engine: AsyncEngine,
             check_every: int,
     ):
         self.bot = bot
         self.manager_factory = manager_factory
         self.storage = storage
-        self.database_pool = database_pool
+        self.db_engine = db_engine
         self.check_every = check_every
 
     async def is_notified(
             self,
-            tracking: Tracking,
+            tracking: TrackingModel,
             appointments: list[Appointment]
-    ):
+    ) -> bool:
         key = StorageKey(
             bot_id=self.bot.id,
             chat_id=tracking.tg_user_id,
@@ -56,12 +56,27 @@ class AppointmentsChecker:
         )
         return False
 
+    async def notify(self, tracking: TrackingModel):
+
+        manager = self.manager_factory.bg(
+            bot=self.bot,
+            user_id=tracking.tg_user_id,
+            chat_id=tracking.tg_user_id
+        )
+        await manager.start(
+            NewAppointmentsStates.notify,
+            data={"tracking": tracking},
+            mode=StartMode.NEW_STACK
+        )
+
+        logger.debug(f"Tracking (ID {tracking.id}) notification sent")
+
     async def check(self):
         logger.debug("Search for appointments started")
 
-        async with self.database_pool() as session:
+        async with AsyncSession(self.db_engine) as session:
             repository = TrackingRepo(session)
-            all_tracking = await repository.get_all_tracking()
+            all_tracking = await repository.get_all_iter()
 
         grouped_tracking = groupby(all_tracking, key=lambda x: (x.clinic, x.doctor))
         for key, group in grouped_tracking:
@@ -72,7 +87,7 @@ class AppointmentsChecker:
                         clinic=clinic,
                         doctor=doctor
                     )
-                except GorZdravError:
+                except GorZdravError:  # todo optimize this
                     continue
 
             for tracking in group:
@@ -81,35 +96,15 @@ class AppointmentsChecker:
                     time_ranges=tracking.time_ranges
                 )
 
+                if await self.is_notified(tracking, appointments):
+                    logger.debug(f"Tracking (ID {tracking.id}) notification has already been sent")
+                    continue
+
                 if filtered_appointments:
-                    await self.notify(
-                        tracking=tracking,
-                        appointments=filtered_appointments
-                    )
+                    await self.notify(tracking=tracking)
 
-        logger.debug(f"Search for appointments ended. Repeat after {self.check_every} minutes")
-
-    async def notify(
-            self,
-            tracking: Tracking,
-            appointments: list[Appointment]
-    ):
-        if await self.is_notified(tracking, appointments):
-            logger.debug(f"Tracking (ID {tracking.id}) notification has already been sent")
-            return
-
-        manager = self.manager_factory.bg(
-            bot=self.bot,
-            user_id=tracking.tg_user_id,
-            chat_id=tracking.tg_user_id
-        )
-        await manager.start(
-            NewAppointmentStates.notify,
-            data={"tracking": tracking},
-            mode=StartMode.NEW_STACK
-        )
-
-        logger.debug(f"Tracking (ID {tracking.id}) notification sent")
+        logger.debug(f"Search for appointments ended. "
+                     f"Repeat after {self.check_every} minutes")
 
     async def run(self):
         while True:

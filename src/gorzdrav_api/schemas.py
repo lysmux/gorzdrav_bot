@@ -1,7 +1,12 @@
 import re
 from datetime import datetime
 
-from pydantic import BaseModel, Field, computed_field, ConfigDict
+from pydantic import (
+    BaseModel,
+    Field,
+    computed_field,
+    ConfigDict
+)
 
 
 class Model(BaseModel):

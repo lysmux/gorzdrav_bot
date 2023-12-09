@@ -1,2 +1,2 @@
-from .base import Base
-from .tracking import Tracking
+from .base import BaseModel
+from .tracking import TrackingModel

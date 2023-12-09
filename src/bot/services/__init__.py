@@ -1,0 +1,1 @@
+from .appointments_checker import AppointmentsChecker

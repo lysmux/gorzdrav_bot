@@ -1,0 +1,49 @@
+from aiogram.types import CallbackQuery
+from aiogram_dialog import Window, DialogManager
+from aiogram_dialog.widgets.kbd import Group, SwitchTo, Button
+from aiogram_dialog.widgets.text import Jinja, Const
+
+from bot import keyboard_texts
+from bot.utils.buttons import get_back_button
+from database.models import TrackingModel
+from database.repositories import Repository
+from ..states import TrackingStates
+
+WINDOW_NAME = "tracking_action"
+STATUS_BTN_ID = f"{WINDOW_NAME}_status_btn"
+DELETE_BTN_ID = f"{WINDOW_NAME}_delete_btn"
+
+
+async def delete_tracking(
+        callback: CallbackQuery,
+        widget: Button,
+        manager: DialogManager
+) -> None:
+    """
+        Delete tracking from database
+    """
+    repository: Repository = manager.middleware_data["repository"]
+    tracking: TrackingModel = manager.dialog_data["selected_tracking"]
+
+    await repository.tracking.delete(TrackingModel.id == tracking.id)
+
+
+window = Window(
+    Jinja("tracking/action_header.html"),
+    Group(
+        SwitchTo(
+            Const(keyboard_texts.tracking.STATUS),
+            id=STATUS_BTN_ID,
+            state=TrackingStates.status
+        ),
+        SwitchTo(
+            Const(keyboard_texts.tracking.DELETE),
+            id=DELETE_BTN_ID,
+            state=TrackingStates.deleted,
+            on_click=delete_tracking
+        ),
+        width=2
+    ),
+    get_back_button(),
+    state=TrackingStates.action
+)

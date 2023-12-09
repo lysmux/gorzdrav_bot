@@ -12,7 +12,7 @@ metadata = MetaData(
 )
 
 
-class Base(DeclarativeBase):
+class BaseModel(DeclarativeBase):
     metadata = metadata
     __allow_unmapped__ = False
 

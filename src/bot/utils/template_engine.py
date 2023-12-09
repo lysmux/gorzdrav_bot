@@ -1,6 +1,6 @@
 from jinja2 import Environment, PackageLoader
 
-env = Environment(
+jinja_env = Environment(
     loader=PackageLoader("bot", "answer_templates"),
     autoescape=True,
     lstrip_blocks=True,
@@ -9,5 +9,5 @@ env = Environment(
 
 
 def render_template(name: str, **kwargs):
-    template = env.get_template(name)
+    template = jinja_env.get_template(name)
     return template.render(**kwargs)
