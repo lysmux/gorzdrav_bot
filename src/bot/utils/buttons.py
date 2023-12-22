@@ -1,8 +1,8 @@
 from aiogram_dialog.widgets.kbd import Start, Back
 from aiogram_dialog.widgets.text import Const
 
-from bot import keyboard_texts
-from bot.logic.general.states import MenuStates
+from src.bot import keyboard_texts
+from src.bot.logic.general.states import MenuStates
 
 MENU_BTN_ID = "menu_btn"
 BACK_BTN_ID = "back_btn"

@@ -7,13 +7,13 @@ from aiogram.fsm.storage.base import StorageKey, BaseStorage
 from aiogram_dialog import BgManagerFactory, StartMode
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
-from bot.logic.new_appointments.states import NewAppointmentsStates
-from database.models import TrackingModel
-from database.repositories import TrackingRepo
-from gorzdrav_api import GorZdravAPI
-from gorzdrav_api.exceptions import GorZdravError
-from gorzdrav_api.schemas import Appointment
-from gorzdrav_api.utils import filter_appointments
+from src.bot.logic.new_appointments.states import NewAppointmentsStates
+from src.database.models import TrackingModel
+from src.database.repositories import TrackingRepo
+from src.gorzdrav_api import GorZdravAPI
+from src.gorzdrav_api.exceptions import GorZdravError
+from src.gorzdrav_api.schemas import Appointment
+from src.gorzdrav_api.utils import filter_appointments
 
 logger = logging.getLogger("Appointments checker")
 
@@ -40,8 +40,8 @@ class AppointmentsChecker:
     ) -> bool:
         key = StorageKey(
             bot_id=self.bot.id,
-            chat_id=tracking.tg_user_id,
-            user_id=tracking.tg_user_id,
+            chat_id=tracking.user.tg_id,
+            user_id=tracking.user.tg_id,
             destiny=f"checker:{tracking.id}"
         )
         data = await self.storage.get_data(key)
@@ -60,8 +60,8 @@ class AppointmentsChecker:
 
         manager = self.manager_factory.bg(
             bot=self.bot,
-            user_id=tracking.tg_user_id,
-            chat_id=tracking.tg_user_id
+            user_id=tracking.user.tg_id,
+            chat_id=tracking.user.tg_id
         )
         await manager.start(
             NewAppointmentsStates.notify,

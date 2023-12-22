@@ -4,15 +4,20 @@ from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
 from src.bot.structures import TransferStruct
-from src.gorzdrav_api import GorZdravAPI
+from src.database.models import UserModel
 
 
-class GorZdravAPIMiddleware(BaseMiddleware):
+class UserMiddleware(BaseMiddleware):
     async def __call__(self,
                        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
                        event: TelegramObject,
                        data: TransferStruct
                        ) -> Any:
-        async with GorZdravAPI() as api:
-            data["gorzdrav_api"] = api
-            return await handler(event, data)
+        repository = data["repository"]
+
+        user = await repository.user.get(UserModel.tg_id == event.from_user.id)
+        if not user:
+            user = await repository.user.new(UserModel.tg_id == event.from_user.id)
+
+        data["user"] = user
+        return await handler(event, data)

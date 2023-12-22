@@ -4,8 +4,8 @@ from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.structures import TransferStruct
-from database import Repository
+from src.bot.structures import TransferStruct
+from src.database import Repository
 
 
 class DatabaseMiddleware(BaseMiddleware):

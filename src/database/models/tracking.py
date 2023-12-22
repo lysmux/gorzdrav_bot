@@ -1,20 +1,23 @@
-from sqlalchemy import Integer, BigInteger, ARRAY
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Integer, ARRAY, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from gorzdrav_api import schemas
-from . import BaseModel
+from src.gorzdrav_api.schemas import (
+    District, Clinic, Speciality, Doctor
+)
+from .base import BaseModel
+from .user import UserModel
 from ..types import PydanticType
 
 
 class TrackingModel(BaseModel):
     __tablename__ = "tracking"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    tg_user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user: Mapped[UserModel] = relationship(backref="tracking", lazy="selectin")
 
     time_ranges: Mapped[list[list[int]]] = mapped_column(ARRAY(Integer), nullable=False)
 
-    district: Mapped[schemas.District] = mapped_column(PydanticType(schemas.District), nullable=False)
-    clinic: Mapped[schemas.Clinic] = mapped_column(PydanticType(schemas.Clinic), nullable=False)
-    speciality: Mapped[schemas.Speciality] = mapped_column(PydanticType(schemas.Speciality), nullable=False)
-    doctor: Mapped[schemas.Doctor] = mapped_column(PydanticType(schemas.Doctor), nullable=False)
+    district: Mapped[District] = mapped_column(PydanticType(District), nullable=False)
+    clinic: Mapped[Clinic] = mapped_column(PydanticType(Clinic), nullable=False)
+    speciality: Mapped[Speciality] = mapped_column(PydanticType(Speciality), nullable=False)
+    doctor: Mapped[Doctor] = mapped_column(PydanticType(Doctor), nullable=False)

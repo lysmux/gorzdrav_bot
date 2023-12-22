@@ -10,10 +10,10 @@ from aiogram_dialog.widgets.text import (
     Jinja
 )
 
-from bot.utils.aio_dialog import sync_scroll
-from bot.utils.buttons import get_back_button
-from gorzdrav_api import GorZdravAPI
-from ..states import AppointmentStates
+from src.bot.logic.make_appointment.states import AppointmentStates
+from src.bot.utils.aio_dialog import sync_scroll
+from src.bot.utils.buttons import get_back_button
+from src.gorzdrav_api import GorZdravAPI
 
 KB_HEIGHT = 3
 KB_WIDTH = 2

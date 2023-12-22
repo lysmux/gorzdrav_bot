@@ -9,11 +9,14 @@ from aiogram_dialog.widgets.input import TextInput, ManagedTextInput
 from aiogram_dialog.widgets.kbd import Select, Group
 from aiogram_dialog.widgets.text import Jinja, Format, Const
 
-from bot import keyboard_texts
-from bot.utils.buttons import get_back_button
-from database.repositories import Repository
-from gorzdrav_api import schemas
-from ..states import AppointmentStates
+from src.bot import keyboard_texts
+from src.bot.logic.make_appointment.states import AppointmentStates
+from src.bot.utils.buttons import get_back_button
+from src.database.models import UserModel
+from src.database.repositories import Repository
+from src.gorzdrav_api.schemas import (
+    District, Clinic, Speciality, Doctor
+)
 
 WINDOW_NAME = "add_tracking"
 SELECT_ID = f"{WINDOW_NAME}_time_range_select"
@@ -43,14 +46,15 @@ async def save_tracking(
         time_ranges: list[list[int]]
 ) -> None:
     repository: Repository = manager.middleware_data["repository"]
+    user: UserModel = manager.middleware_data["user"]
 
-    district: schemas.District = manager.start_data["district"]
-    clinic: schemas.Clinic = manager.start_data["clinic"]
-    speciality: schemas.Speciality = manager.start_data["speciality"]
-    doctor: schemas.Doctor = manager.start_data["doctor"]
+    district: District = manager.dialog_data["district"]
+    clinic: Clinic = manager.dialog_data["clinic"]
+    speciality: Speciality = manager.dialog_data["speciality"]
+    doctor: Doctor = manager.dialog_data["doctor"]
 
-    await repository.tracking.add(
-        tg_user_id=manager.event.from_user.id,
+    await repository.tracking.new(
+        user=user,
         district=district,
         clinic=clinic,
         speciality=speciality,

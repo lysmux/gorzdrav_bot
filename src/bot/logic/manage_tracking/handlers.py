@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
-from .states import TrackingStates
+from src.bot.logic.manage_tracking.states import TrackingStates
 
 router = Router()
 

@@ -5,9 +5,9 @@ from aiogram_dialog import DialogManager, Window
 from aiogram_dialog.widgets.kbd import ScrollingGroup, Select
 from aiogram_dialog.widgets.text import Format, Jinja
 
-from bot.utils.buttons import get_back_button
-from gorzdrav_api import GorZdravAPI
-from ..states import AppointmentStates
+from src.bot.logic.make_appointment.states import AppointmentStates
+from src.bot.utils.buttons import get_back_button
+from src.gorzdrav_api import GorZdravAPI
 
 KB_HEIGHT = 4
 KB_WIDTH = 1

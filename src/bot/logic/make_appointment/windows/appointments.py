@@ -16,11 +16,11 @@ from aiogram_dialog.widgets.text import (
     Const
 )
 
-from bot import keyboard_texts
-from bot.utils.buttons import get_menu_button, get_back_button
-from gorzdrav_api import GorZdravAPI
-from gorzdrav_api.utils import generate_gorzdrav_url
-from ..states import AppointmentStates
+from src.bot import keyboard_texts
+from src.bot.logic.make_appointment.states import AppointmentStates
+from src.bot.utils.buttons import get_menu_button, get_back_button
+from src.gorzdrav_api import GorZdravAPI
+from src.gorzdrav_api.utils import generate_gorzdrav_url
 
 KB_HEIGHT = 4
 KB_WIDTH = 2

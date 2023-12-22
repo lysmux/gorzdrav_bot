@@ -12,11 +12,11 @@ from aiogram_dialog.widgets.text import (
     Const
 )
 
-from bot.utils.aio_dialog import sync_scroll
-from bot.utils.buttons import get_menu_button
-from database.models import TrackingModel
-from database.repositories import Repository
-from ..states import TrackingStates
+from src.bot.logic.manage_tracking.states import TrackingStates
+from src.bot.utils.aio_dialog import sync_scroll
+from src.bot.utils.buttons import get_menu_button
+from src.database.models import TrackingModel
+from src.database.repositories import Repository
 
 KB_HEIGHT = 4
 KB_WIDTH = 3
@@ -36,7 +36,7 @@ async def data_getter(
     """
         Get user tracking from database
     """
-    user_tracking = await repository.tracking.get_all(TrackingModel.tg_user_id == event_from_user.id)
+    user_tracking = await repository.tracking.get_all(TrackingModel.user.tg_id == event_from_user.id)
     dialog_manager.dialog_data["user_tracking"] = user_tracking
 
     return {

@@ -10,11 +10,11 @@ from aiogram_dialog.widgets.kbd import (
 )
 from aiogram_dialog.widgets.text import Jinja, Format, Case
 
-from bot.utils.buttons import get_back_button, get_menu_button
-from database.models import TrackingModel
-from gorzdrav_api import GorZdravAPI
-from gorzdrav_api.utils import generate_gorzdrav_url, filter_appointments
-from ..states import TrackingStates
+from src.bot.logic.manage_tracking.states import TrackingStates
+from src.bot.utils.buttons import get_back_button, get_menu_button
+from src.database.models import TrackingModel
+from src.gorzdrav_api import GorZdravAPI
+from src.gorzdrav_api.utils import generate_gorzdrav_url, filter_appointments
 
 KB_HEIGHT = 4
 KB_WIDTH = 2

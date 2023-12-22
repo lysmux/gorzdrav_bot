@@ -2,8 +2,8 @@ from aiogram import Router
 from aiogram.filters import ExceptionTypeFilter
 from aiogram.types import ErrorEvent
 
-from bot.utils.template_engine import render_template
-from gorzdrav_api.exceptions import GorZdravError
+from src.bot.utils.template_engine import render_template
+from src.gorzdrav_api.exceptions import GorZdravError
 
 router = Router()
 

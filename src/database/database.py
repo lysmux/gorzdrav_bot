@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 
-from config import settings
+from src.config import settings
 
 logger = logging.getLogger("database")
 

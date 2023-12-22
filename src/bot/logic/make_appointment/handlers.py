@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
-from .states import AppointmentStates
+from src.bot.logic.make_appointment.states import AppointmentStates
 
 router = Router()
 

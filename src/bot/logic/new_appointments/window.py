@@ -3,9 +3,9 @@ from aiogram_dialog import Window, DialogManager
 from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.text import Jinja, Const
 
-from bot import keyboard_texts
-from bot.logic.manage_tracking.states import TrackingStates
-from .states import NewAppointmentsStates
+from src.bot import keyboard_texts
+from src.bot.logic.manage_tracking.states import TrackingStates
+from src.bot.logic.new_appointments.states import NewAppointmentsStates
 
 SEE_APPOINTMENTS_BTN_ID = "see_appointments_btn"
 

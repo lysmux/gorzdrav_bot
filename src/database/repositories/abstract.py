@@ -19,7 +19,7 @@ class AbstractRepo(ABC, Generic[AbstractModel]):
         self.model_type = model_type
 
     @abstractmethod
-    async def add(self, *args, **kwargs) -> AbstractModel:
+    async def new(self, *args, **kwargs) -> AbstractModel:
         pass
 
     async def delete(self, *clause: ColumnExpressionArgument) -> None:

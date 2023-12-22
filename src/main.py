@@ -6,13 +6,13 @@ from aiogram.enums import ParseMode
 from aiogram_dialog import setup_dialogs
 from aiogram_dialog.widgets.text.jinja import JINJA_ENV_FIELD
 
-from bot import run_as_webhook, run_as_pooling, get_dispatcher
-from bot.services import AppointmentsChecker
-from bot.structures import TransferStruct
-from bot.utils.set_bot_commands import set_bot_commands
-from bot.utils.template_engine import jinja_env
-from config import settings
-from database import get_engine
+from src.bot.services import AppointmentsChecker
+from src.bot.setup import run_as_webhook, run_as_pooling, get_dispatcher
+from src.bot.structures import TransferStruct
+from src.bot.utils.set_bot_commands import set_bot_commands
+from src.bot.utils.template_engine import jinja_env
+from src.config import settings
+from src.database import get_engine
 
 logger = logging.getLogger("main")
 
