@@ -3,6 +3,7 @@ from typing import TypeVar, Generic, Sequence
 
 from sqlalchemy import delete, select, ColumnExpressionArgument, ScalarResult
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.functions import count
 
 from ..models import BaseModel
 
@@ -60,3 +61,9 @@ class AbstractRepo(ABC, Generic[AbstractModel]):
         )
 
         return result.all()
+
+    async def count(self, *clause: ColumnExpressionArgument) -> int:
+        stmt = select(count()).select_from(self.model_type).where(*clause)
+        result = await self.session.execute(stmt)
+
+        return result.scalar()

@@ -8,7 +8,7 @@ from src.bot.utils.buttons import get_menu_button, get_back_button
 window = Window(
     Jinja("tracking/tracking_added.html"),
     Group(
-        get_back_button(),
+        get_back_button(AppointmentStates.tracking_add),
         get_menu_button(),
         width=2
     ),

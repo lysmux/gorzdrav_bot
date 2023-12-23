@@ -44,6 +44,6 @@ window = Window(
         ),
         width=2
     ),
-    get_back_button(),
+    get_back_button(TrackingStates.list),
     state=TrackingStates.action
 )

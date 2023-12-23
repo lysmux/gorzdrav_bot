@@ -82,7 +82,7 @@ window = Window(
         height=KB_HEIGHT,
         width=KB_WIDTH
     ),
-    get_back_button(),
+    get_back_button(AppointmentStates.district),
     getter=data_getter,
     state=AppointmentStates.clinic
 )

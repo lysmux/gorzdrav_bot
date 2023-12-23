@@ -85,7 +85,7 @@ window = Window(
         state=AppointmentStates.tracking_add
     ),
     Group(
-        get_back_button(),
+        get_back_button(AppointmentStates.doctor),
         get_menu_button(),
         width=2
     ),

@@ -150,7 +150,7 @@ window = Window(
         width=2
     ),
 
-    get_back_button(),
+    get_back_button(AppointmentStates.appointment),
 
     TextInput(
         id=TEXT_INPUT_ID,

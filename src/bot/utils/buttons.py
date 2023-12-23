@@ -1,4 +1,5 @@
-from aiogram_dialog.widgets.kbd import Start, Back
+from aiogram.fsm.state import State
+from aiogram_dialog.widgets.kbd import Start, Back, SwitchTo
 from aiogram_dialog.widgets.text import Const
 
 from src.bot import keyboard_texts
@@ -16,8 +17,9 @@ def get_menu_button() -> Start:
     )
 
 
-def get_back_button():
-    return Back(
+def get_back_button(state: State):
+    return SwitchTo(
         Const(keyboard_texts.general.BACK),
         id=BACK_BTN_ID,
+        state=state
     )

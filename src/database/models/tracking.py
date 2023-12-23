@@ -13,7 +13,7 @@ class TrackingModel(BaseModel):
     __tablename__ = "tracking"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    user: Mapped[UserModel] = relationship(backref="tracking", lazy="selectin")
+    user: Mapped[UserModel] = relationship(backref="tracking", lazy="selectin", uselist=False)
 
     time_ranges: Mapped[list[list[int]]] = mapped_column(ARRAY(Integer), nullable=False)
 

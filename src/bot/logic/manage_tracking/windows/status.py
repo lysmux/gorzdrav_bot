@@ -82,7 +82,7 @@ window = Window(
 
     # Navigation
     Group(
-        get_back_button(),
+        get_back_button(TrackingStates.list),
         get_menu_button(),
         width=2
     ),
