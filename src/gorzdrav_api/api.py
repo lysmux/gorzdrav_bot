@@ -42,9 +42,9 @@ class GorZdravAPI:
                 headers=self.HEADERS,
                 ssl=False,
             )
-        except (client_exceptions.ClientConnectionError, client_exceptions.ClientConnectorError) as e:
-            logging.exception("Connection error", exc_info=e)
-            raise exceptions.ServerError(message=e.message)
+        except client_exceptions.ClientConnectorError as exc:
+            logging.exception("Connection error", exc_info=exc)
+            raise exceptions.ServerError(message=str(exc))
 
         if response.status != 200:
             logging.error(f"Server returned http code {response.status}")
