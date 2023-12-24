@@ -38,7 +38,7 @@ async def data_getter(
     )
     filtered_appointments = filter_appointments(
         appointments=appointments,
-        time_ranges=tracking.time_ranges
+        hours=tracking.hours
     )
 
     appointment_url = generate_gorzdrav_url(

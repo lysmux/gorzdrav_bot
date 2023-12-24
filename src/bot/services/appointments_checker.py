@@ -93,7 +93,7 @@ class AppointmentsChecker:
             for tracking in group:
                 filtered_appointments = filter_appointments(
                     appointments=appointments,
-                    time_ranges=tracking.time_ranges
+                    hours=tracking.hours
                 )
 
                 if await self.is_notified(tracking, appointments):

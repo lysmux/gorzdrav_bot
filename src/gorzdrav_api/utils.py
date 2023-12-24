@@ -2,14 +2,16 @@ import json
 from itertools import chain
 from urllib.parse import quote
 
-from . import schemas
+from .schemas import (
+    District, Clinic, Speciality, Doctor, Appointment
+)
 
 
 def generate_gorzdrav_url(
-        district: schemas.District,
-        clinic: schemas.Clinic,
-        speciality: schemas.Speciality,
-        doctor: schemas.Doctor
+        district: District,
+        clinic: Clinic,
+        speciality: Speciality,
+        doctor: Doctor
 ) -> str:
     base_url = "https://gorzdrav.spb.ru/service-free-schedule#"
 
@@ -27,12 +29,9 @@ def generate_gorzdrav_url(
 
 
 def filter_appointments(
-        appointments: list[schemas.Appointment],
-        time_ranges: list[list[int]]
-) -> list[schemas.Appointment]:
-    hours = set(chain.from_iterable(
-        (range(*i) for i in time_ranges)
-    ))
+        appointments: list[Appointment],
+        hours: set[int]
+) -> list[Appointment]:
     filtered_appointments = list(filter(
         lambda x: x.time.hour in hours, appointments
     ))

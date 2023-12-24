@@ -1,6 +1,7 @@
 import operator
 import re
 from enum import auto, StrEnum
+from itertools import chain
 
 from aiogram import F
 from aiogram.types import CallbackQuery, Message
@@ -12,7 +13,7 @@ from aiogram_dialog.widgets.text import Jinja, Format, Const
 from src.bot import keyboard_texts
 from src.bot.logic.make_appointment.states import AppointmentStates
 from src.bot.utils.buttons import get_back_button
-from src.database.models import UserModel
+from src.database.models import UserModel, TrackingModel
 from src.database.repositories import Repository
 from src.gorzdrav_api.schemas import (
     District, Clinic, Speciality, Doctor
@@ -43,7 +44,7 @@ async def data_getter(**kwargs) -> dict:
 
 async def save_tracking(
         manager: DialogManager,
-        time_ranges: list[list[int]]
+        hours: set[int]
 ) -> None:
     repository: Repository = manager.middleware_data["repository"]
     user: UserModel = manager.middleware_data["user"]
@@ -53,14 +54,22 @@ async def save_tracking(
     speciality: Speciality = manager.dialog_data["speciality"]
     doctor: Doctor = manager.dialog_data["doctor"]
 
-    await repository.tracking.new(
-        user=user,
-        district=district,
-        clinic=clinic,
-        speciality=speciality,
-        doctor=doctor,
-        time_ranges=time_ranges
+    tracking = await repository.tracking.get(
+        TrackingModel.clinic == clinic,
+        TrackingModel.doctor == doctor
     )
+
+    if tracking:
+        tracking.hours = hours.union(tracking.hours)
+    else:
+        await repository.tracking.new(
+            user=user,
+            district=district,
+            clinic=clinic,
+            speciality=speciality,
+            doctor=doctor,
+            hours=hours
+        )
 
     await manager.switch_to(AppointmentStates.tracking_added)
 
@@ -73,19 +82,19 @@ async def select_time_range(
 ) -> None:
     match time_range:
         case TimeRangeEnum.MORNING:
-            time_range = [0, 13]
+            hours = set(range(0, 13))
         case TimeRangeEnum.AFTERNOON:
-            time_range = [13, 18]
+            hours = set(range(13, 18))
         case TimeRangeEnum.EVENING:
-            time_range = [18, 24]
+            hours = set(range(18, 24))
         case TimeRangeEnum.ALL_DAY:
-            time_range = [0, 23]
+            hours = set(range(0, 23))
         case _:
-            time_range = []
+            hours = {}
 
     await save_tracking(
         manager=manager,
-        time_ranges=[time_range]
+        hours=hours
     )
 
 
@@ -95,9 +104,13 @@ async def select_raw_time_range(
         manager: DialogManager,
         time_ranges
 ) -> None:
+    hours = set(chain.from_iterable(
+        (range(i[0], i[1] + 1) for i in time_ranges)
+    ))
+
     await save_tracking(
         manager=manager,
-        time_ranges=time_ranges
+        hours=hours
     )
 
 

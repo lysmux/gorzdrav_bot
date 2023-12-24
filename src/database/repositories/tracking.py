@@ -16,7 +16,7 @@ class TrackingRepo(AbstractRepo[TrackingModel]):
             clinic: schemas.Clinic,
             speciality: schemas.Speciality,
             doctor: schemas.Doctor,
-            time_ranges: list[list[int]]
+            hours: set[int]
 
     ) -> TrackingModel:
         tracking = TrackingModel(
@@ -25,7 +25,7 @@ class TrackingRepo(AbstractRepo[TrackingModel]):
             clinic=clinic,
             speciality=speciality,
             doctor=doctor,
-            time_ranges=time_ranges
+            hours=hours
         )
         self.session.add(tracking)
 

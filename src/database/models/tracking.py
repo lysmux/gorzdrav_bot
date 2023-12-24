@@ -1,4 +1,8 @@
+from itertools import groupby
+from operator import sub, itemgetter
+
 from sqlalchemy import Integer, ARRAY, ForeignKey
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.gorzdrav_api.schemas import (
@@ -15,9 +19,22 @@ class TrackingModel(BaseModel):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     user: Mapped[UserModel] = relationship(backref="tracking", lazy="selectin", uselist=False)
 
-    time_ranges: Mapped[list[list[int]]] = mapped_column(ARRAY(Integer), nullable=False)
+    hours: Mapped[set[int]] = mapped_column(ARRAY(Integer), nullable=False)
 
     district: Mapped[District] = mapped_column(PydanticType(District), nullable=False)
     clinic: Mapped[Clinic] = mapped_column(PydanticType(Clinic), nullable=False)
     speciality: Mapped[Speciality] = mapped_column(PydanticType(Speciality), nullable=False)
     doctor: Mapped[Doctor] = mapped_column(PydanticType(Doctor), nullable=False)
+
+    @hybrid_property
+    def time_ranges(self) -> list[list[int]]:
+        result = []
+
+        for k, g in groupby(enumerate(self.hours), lambda x: sub(*x)):
+            items = list(map(itemgetter(1), g))
+            if len(items) > 1:
+                result.append([items[0], items[-1]])
+            else:
+                result.append([items[0], items[0]])
+
+        return result

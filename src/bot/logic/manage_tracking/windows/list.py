@@ -36,7 +36,7 @@ async def data_getter(
     """
         Get user tracking from database
     """
-    user_tracking = await repository.tracking.get_all(TrackingModel.user.tg_id == event_from_user.id)
+    user_tracking = await repository.tracking.get_all(TrackingModel.user.has(tg_id=event_from_user.id))
     dialog_manager.dialog_data["user_tracking"] = user_tracking
 
     return {
