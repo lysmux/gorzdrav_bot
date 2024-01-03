@@ -15,6 +15,7 @@ class PydanticType(TypeDecorator):
     - Uses the dict to create a pydantic model.
     """
 
+    cache_ok = True
     impl = JSONB(none_as_null=True)
 
     def __init__(self, pydantic_model: type[BaseModel], **kwargs):
