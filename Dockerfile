@@ -33,4 +33,4 @@ RUN adduser \
     app
 USER app
 
-CMD [".venv/bin/python", "main.py"]
+CMD [".venv/bin/python", "src/main.py"]
