@@ -33,4 +33,4 @@ RUN adduser \
     app
 USER app
 
-CMD [".venv/bin/python", "-m", "src"]
+ENTRYPOINT ["/bin/sh", "docker-entrypoint.sh"]

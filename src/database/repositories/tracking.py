@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.gorzdrav_api import schemas
-from . import AbstractRepo
+from .abstract import AbstractRepo
 from ..models import TrackingModel, UserModel
 
 

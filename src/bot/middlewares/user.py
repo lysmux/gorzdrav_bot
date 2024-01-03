@@ -15,9 +15,9 @@ class UserMiddleware(BaseMiddleware):
                        ) -> Any:
         repository = data["repository"]
 
-        user = await repository.user.get(UserModel.tg_id == event.from_user.id)
+        user = await repository.user.get(clause=UserModel.tg_id == event.from_user.id)
         if not user:
-            user = await repository.user.new(UserModel.tg_id == event.from_user.id)
+            user = await repository.user.new(tg_id=event.from_user.id)
 
         data["user"] = user
         return await handler(event, data)
