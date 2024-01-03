@@ -53,9 +53,9 @@ class GorZdravAPI:
 
         try:
             deserialized_data = await response.json()
-        except ContentTypeError as e:
-            logging.exception(f"Deserialization error", exc_info=e)
-            raise exceptions.ResponseParseError(message=e.message)
+        except ContentTypeError as exc:
+            logging.exception(f"Deserialization error", exc_info=exc)
+            raise exceptions.ResponseParseError(message=exc.message)
 
         match deserialized_data["errorCode"]:
             case 0:

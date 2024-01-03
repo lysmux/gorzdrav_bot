@@ -108,5 +108,9 @@ class AppointmentsChecker:
         The main loop that calls the check every `settings.check_every` minutes
         """
         while True:
+            logger.info("The tracking check is started")
             await self.check_all()
+            logger.info(f"The tracking check is finished. "
+                        f"Repeat after {settings.check_every} minutes")
+
             await asyncio.sleep(settings.check_every * 60)
