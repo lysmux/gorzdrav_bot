@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 
 from src.config import settings
 
-logger = logging.getLogger("database")
+logger = logging.getLogger(__name__)
 
 
 def get_engine() -> AsyncEngine:

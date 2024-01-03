@@ -12,3 +12,4 @@ class TransferStruct(TypedDict, total=False):
     repository: Repository
     gorzdrav_api: GorZdravAPI
     user: UserModel
+    user_is_admin: bool

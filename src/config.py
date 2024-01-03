@@ -74,6 +74,8 @@ class Settings(BaseSettings):
     use_webhook: bool = False
     check_every: int = 5
 
+    admins: list[int] = []
+
     bot: BotSettings
     db: DatabaseSettings
     redis: RedisSettings | None = None

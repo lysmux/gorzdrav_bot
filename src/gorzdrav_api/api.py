@@ -8,19 +8,19 @@ from pydantic import BaseModel, TypeAdapter
 
 from . import schemas, exceptions
 
-
-logger = logging.getLogger("gorzdrav")
+logger = logging.getLogger(__name__)
 
 P = TypeVar("P", bound=BaseModel)
 
+API_URL = "https://gorzdrav.spb.ru/_api/api/v2"
+HEADERS = {
+    "X-Requested-With": "XMLHttpRequest",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                  "Chrome/103.0.0.0 Safari/537.36",
+}
+
 
 class GorZdravAPI:
-    API_URL = "https://gorzdrav.spb.ru/_api/api/v2"
-    HEADERS = {
-        "X-Requested-With": "XMLHttpRequest",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                      "Chrome/103.0.0.0 Safari/537.36",
-    }
 
     def __init__(self):
         self._http_client = ClientSession()
@@ -37,9 +37,9 @@ class GorZdravAPI:
         try:
             response = await self._http_client.request(
                 method=method,
-                url=f"{self.API_URL}/{url_part}",
+                url=f"{API_URL}/{url_part}",
                 params=params,
-                headers=self.HEADERS,
+                headers=HEADERS,
                 ssl=False,
             )
         except client_exceptions.ClientConnectorError as exc:

@@ -11,13 +11,14 @@ from cashews import cache
 from redis.asyncio import Redis
 
 from src.bot.logic import routers
-from src.bot.middlewares import GorZdravAPIMiddleware, DatabaseMiddleware
-from src.bot.middlewares.user import UserMiddleware
+from src.bot.middlewares import (
+    GorZdravAPIMiddleware, DatabaseMiddleware, UserMiddleware
+)
 from src.bot.structures import TransferStruct
 from src.bot.utils.redis_storage import RedisPickleStorage
 from src.config import settings
 
-logger = logging.getLogger("bot")
+logger = logging.getLogger(__name__)
 
 
 def get_storage() -> BaseStorage:

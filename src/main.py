@@ -14,7 +14,7 @@ from src.bot.utils.template_engine import jinja_env
 from src.config import settings
 from src.database import get_engine
 
-logger = logging.getLogger("main")
+logger = logging.getLogger(__name__)
 
 
 async def run_bot():

@@ -1,6 +1,7 @@
 from aiogram import Router, F
 from aiogram.filters import or_f, Command
 
+from src.config import settings
 from . import handlers, dialog
 
 ROUTER_NAME = "admin"
@@ -16,7 +17,11 @@ def get_router() -> Router:
         or_f(
             Command(commands=COMMANDS),
             ~F.text.startswith("/")
-        )
+        ),
+        F.from_user.id.in_(settings.admins)
+    )
+    router.callback_query.filter(
+        F.from_user.id.in_(settings.admins)
     )
 
     router.include_routers(

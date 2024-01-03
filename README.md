@@ -16,6 +16,8 @@ The settings should be in the .env file or in the environment variables
 * **GORZDRAV_USER_REDIS** - (bool) Use redis (default: False)
 * **GORZDRAV_USE_WEBHOOK** - (bool) Use webhook (default: False)
 * **GORZDRAV_CHECK_EVERY** - (int) Check appointments every (VALUE) minutes (default: 5)
+* **GORZDRAV_ADMINS** - (list of int) List of bot admins' IDs (default: [])
+
 
 #### Telegram settings
 * **GORZDRAV_BOT__TOKEN** - (str) Bot token
