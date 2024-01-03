@@ -88,14 +88,6 @@ async def run_as_webhook(
     app = web.Application()
     runner = web.AppRunner(app)
 
-    # setup aiohttp server
-    await runner.setup()
-    webhook_site = web.TCPSite(
-        runner,
-        host=settings.webhook.app_host,
-        port=settings.webhook.app_port
-    )
-
     # setup requests handler
     webhook_requests_handler = SimpleRequestHandler(
         dispatcher=dispatcher,
@@ -106,6 +98,15 @@ async def run_as_webhook(
     webhook_requests_handler.register(app, path=settings.webhook.path)
     setup_application(app, dispatcher)
 
+    # setup aiohttp server
+    await runner.setup()
+    webhook_site = web.TCPSite(
+        runner,
+        host=settings.webhook.app_host,
+        port=settings.webhook.app_port
+    )
+
+    # set webhook url
     await bot.set_webhook(
         url=settings.webhook.url,
         secret_token=settings.webhook.secret,
