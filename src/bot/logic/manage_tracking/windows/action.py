@@ -1,3 +1,4 @@
+from aiogram.fsm.storage.base import BaseStorage
 from aiogram.types import CallbackQuery
 from aiogram_dialog import Window, DialogManager
 from aiogram_dialog.widgets.kbd import Group, SwitchTo, Button
@@ -5,6 +6,7 @@ from aiogram_dialog.widgets.text import Jinja, Const
 
 from src.bot import keyboard_texts
 from src.bot.logic.manage_tracking.states import TrackingStates
+from src.bot.services.appointments_checker import CheckerStorageProxy
 from src.bot.utils.buttons import get_back_button
 from src.database.models import TrackingModel
 from src.database.repositories import Repository
@@ -22,10 +24,18 @@ async def delete_tracking(
     """
         Delete tracking from database
     """
+    fsm_storage: BaseStorage = manager.middleware_data["fsm_storage"]
     repository: Repository = manager.middleware_data["repository"]
     tracking: TrackingModel = manager.dialog_data["selected_tracking"]
 
+    checker_storage_proxy = CheckerStorageProxy(
+        bot=callback.bot,
+        storage=fsm_storage,
+        tracking=tracking
+    )
+
     await repository.tracking.delete(TrackingModel.id == tracking.id)
+    await checker_storage_proxy.remove()
 
 
 window = Window(

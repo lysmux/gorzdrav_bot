@@ -28,10 +28,7 @@ async def data_getter(
         dialog_manager: DialogManager,
         **kwargs
 ) -> dict:
-    tracking: TrackingModel = (
-            dialog_manager.dialog_data.get("selected_tracking") or
-            dialog_manager.start_data.get("tracking")  # if from notification
-    )
+    tracking: TrackingModel = dialog_manager.dialog_data.get("selected_tracking")
     appointments = await gorzdrav_api.get_appointments(
         clinic=tracking.clinic,
         doctor=tracking.doctor

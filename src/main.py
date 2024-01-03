@@ -32,10 +32,9 @@ async def run_bot():
     # setup appointments checker
     appointments_checker = AppointmentsChecker(
         bot=bot,
-        manager_factory=aiod_manager_factory,
-        storage=dispatcher.storage,
         db_engine=engine,
-        check_every=settings.check_every,
+        storage=dispatcher.storage,
+        manager_factory=aiod_manager_factory
     )
 
     # run
