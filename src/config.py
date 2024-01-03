@@ -1,7 +1,5 @@
 import secrets
-import sys
 from enum import StrEnum
-from pathlib import Path
 
 from pydantic import BaseModel, field_validator, computed_field
 from pydantic_core.core_schema import ValidationInfo
@@ -96,7 +94,7 @@ class Settings(BaseSettings):
     class Config:
         use_enum_values = True
 
-        env_file = Path(sys.path[0]).parent / ".env"
+        env_file = ".env"
         env_file_encoding = "utf-8"
 
         env_nested_delimiter = "__"

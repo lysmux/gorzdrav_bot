@@ -1,7 +1,7 @@
 from jinja2 import Environment, PackageLoader
 
 jinja_env = Environment(
-    loader=PackageLoader("bot", "answer_templates"),
+    loader=PackageLoader("src.bot", "answer_templates"),
     autoescape=True,
     lstrip_blocks=True,
     trim_blocks=True
