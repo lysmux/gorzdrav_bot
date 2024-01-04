@@ -55,8 +55,10 @@ async def save_tracking(
     doctor: Doctor = manager.dialog_data["doctor"]
 
     tracking = await repository.tracking.get(
-        TrackingModel.clinic == clinic,
-        TrackingModel.doctor == doctor
+        clause=(
+            TrackingModel.clinic == clinic,
+            TrackingModel.doctor == doctor
+        )
     )
 
     if tracking:

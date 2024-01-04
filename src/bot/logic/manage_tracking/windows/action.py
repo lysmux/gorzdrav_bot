@@ -34,7 +34,7 @@ async def delete_tracking(
         tracking=tracking
     )
 
-    await repository.tracking.delete(TrackingModel.id == tracking.id)
+    await repository.tracking.delete(clause=TrackingModel.id == tracking.id)
     await checker_storage_proxy.remove()
 
 
