@@ -21,6 +21,8 @@ alembic = "^1.13.1"
 
 [tool.poetry.group.dev.dependencies]
 setuptools = "^68.2.2"
+mypy = "^1.8.0"
+flake8 = "^7.0.0"
 
 [build-system]
 requires = ["poetry-core"]
