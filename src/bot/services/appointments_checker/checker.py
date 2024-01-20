@@ -7,12 +7,12 @@ from aiogram_dialog import BgManagerFactory
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine
 
 from src.bot.utils.template_engine import render_template
-from src.config import settings
 from src.database.models import TrackingModel
 from src.database.repositories import TrackingRepo
 from src.gorzdrav_api import GorZdravAPI
 from src.gorzdrav_api.schemas import Appointment
 from src.gorzdrav_api.utils import filter_appointments
+from src.settings import Settings
 from .storage import CheckerStorageProxy
 
 logger = logging.getLogger(__name__)
@@ -25,11 +25,13 @@ class AppointmentsChecker:
             bot: Bot,
             storage: BaseStorage,
             manager_factory: BgManagerFactory,
+            settings: Settings
     ) -> None:
         self.db_engine = db_engine
         self.bot = bot
         self.storage = storage
         self.manager_factory = manager_factory
+        self.settings = settings
 
     async def is_notified(
             self,
@@ -111,6 +113,6 @@ class AppointmentsChecker:
             logger.info("The tracking check is started")
             await self.check_all()
             logger.info(f"The tracking check is finished. "
-                        f"Repeat after {settings.check_every} minutes")
+                        f"Repeat after {self.settings.check_every} minutes")
 
-            await asyncio.sleep(settings.check_every * 60)
+            await asyncio.sleep(self.settings.check_every * 60)

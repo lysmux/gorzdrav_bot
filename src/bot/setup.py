@@ -16,12 +16,12 @@ from src.bot.middlewares import (
 )
 from src.bot.structures import TransferStruct
 from src.bot.utils.redis_storage import RedisPickleStorage
-from src.config import settings
+from src.settings import Settings, WebhookSettings
 
 logger = logging.getLogger(__name__)
 
 
-def get_storage() -> BaseStorage:
+def get_storage(settings: Settings) -> BaseStorage:
     if settings.use_redis:
         logger.info("Using Redis for cache")
         redis = Redis(
@@ -48,8 +48,8 @@ def get_storage() -> BaseStorage:
     return storage
 
 
-def get_dispatcher() -> Dispatcher:
-    storage = get_storage()
+def get_dispatcher(settings: Settings) -> Dispatcher:
+    storage = get_storage(settings=settings)
     dispatcher = Dispatcher(storage=storage)
 
     # setup routers
@@ -83,7 +83,8 @@ async def run_as_pooling(
 async def run_as_webhook(
         bot: Bot,
         dispatcher: Dispatcher,
-        transfer_data: TransferStruct
+        transfer_data: TransferStruct,
+        webhook_settings: WebhookSettings
 ) -> None:
     app = web.Application()
     runner = web.AppRunner(app)
@@ -92,28 +93,29 @@ async def run_as_webhook(
     webhook_requests_handler = SimpleRequestHandler(
         dispatcher=dispatcher,
         bot=bot,
-        secret_token=settings.webhook.secret,
+        secret_token=webhook_settings.secret,
         **transfer_data
     )
-    webhook_requests_handler.register(app, path=settings.webhook.path)
+    webhook_requests_handler.register(app, path=webhook_settings.path)
     setup_application(app, dispatcher)
 
     # setup aiohttp server
     await runner.setup()
     webhook_site = web.TCPSite(
         runner,
-        host=settings.webhook.app_host,
-        port=settings.webhook.app_port
+        host=webhook_settings.app_host,
+        port=webhook_settings.app_port
     )
 
     # set webhook url
     await bot.set_webhook(
-        url=settings.webhook.url,
-        secret_token=settings.webhook.secret,
+        url=webhook_settings.url,
+        secret_token=webhook_settings.secret,
         drop_pending_updates=True
     )
 
-    logger.info(f"WebHook server is running on {settings.webhook.app_host}:{settings.webhook.app_port}")
+    logger.info(f"WebHook server is running on "
+                f"{webhook_settings.app_host}:{webhook_settings.app_port}")
     try:
         await webhook_site.start()
         await asyncio.Event().wait()

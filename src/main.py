@@ -11,15 +11,15 @@ from src.bot.setup import run_as_webhook, run_as_pooling, get_dispatcher
 from src.bot.structures import TransferStruct
 from src.bot.utils.set_bot_commands import set_bot_commands
 from src.bot.utils.template_engine import jinja_env
-from src.config import settings
 from src.database import get_engine
+from src.settings import Settings
 
 logger = logging.getLogger(__name__)
 
 
-async def run_bot():
-    engine = get_engine()
-    dispatcher = get_dispatcher()
+async def run_bot(settings: Settings):
+    engine = get_engine(db_settings=settings.db)
+    dispatcher = get_dispatcher(settings=settings)
 
     # setup bot
     bot = Bot(token=settings.bot.token, parse_mode=ParseMode.HTML)
@@ -34,7 +34,8 @@ async def run_bot():
         bot=bot,
         db_engine=engine,
         storage=dispatcher.storage,
-        manager_factory=aiod_manager_factory
+        manager_factory=aiod_manager_factory,
+        settings=settings
     )
 
     # run
@@ -43,7 +44,8 @@ async def run_bot():
             task = run_as_webhook(
                 bot=bot,
                 dispatcher=dispatcher,
-                transfer_data=TransferStruct(engine=engine)
+                transfer_data=TransferStruct(engine=engine),
+                webhook_settings=settings.webhook
             )
         else:
             task = run_as_pooling(
@@ -57,6 +59,8 @@ async def run_bot():
 
 
 def main() -> None:
+    settings = Settings()  # type: ignore
+
     logging.basicConfig(
         level=settings.log_level,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
@@ -64,7 +68,7 @@ def main() -> None:
 
     try:
         logger.info("GorZdrav bot is running")
-        asyncio.run(run_bot())
+        asyncio.run(run_bot(settings=settings))
     except (KeyboardInterrupt, SystemExit):
         logger.info("GorZdrav bot stopped")
 

@@ -1,10 +1,13 @@
-import secrets
 from enum import StrEnum
 
-from pydantic import BaseModel, field_validator, computed_field
+from pydantic import field_validator
 from pydantic_core.core_schema import ValidationInfo
 from pydantic_settings import BaseSettings
-from sqlalchemy import URL
+
+from .bot import BotSettings
+from .database import DatabaseSettings
+from .redis import RedisSettings
+from .webhook import WebhookSettings
 
 
 class LogLevel(StrEnum):
@@ -13,56 +16,12 @@ class LogLevel(StrEnum):
     ERROR = "ERROR"
 
     @classmethod
-    def _missing_(cls, value: str):
+    def _missing_(cls, value: str):  # type: ignore
         value = value.lower()
         for member in cls:
             if member.lower() == value:
                 return member
         return None
-
-
-class BotSettings(BaseModel):
-    token: str
-
-
-class DatabaseSettings(BaseModel):
-    host: str = "localhost"
-    port: int = 5432
-    user: str
-    password: str
-    database: str
-
-    @computed_field
-    @property
-    def url(self) -> str:
-        return URL.create(
-            drivername="postgresql+asyncpg",
-            host=self.host,
-            port=self.port,
-            username=self.user,
-            password=self.password,
-            database=self.database
-        ).render_as_string(hide_password=False)
-
-
-class RedisSettings(BaseModel):
-    host: str = "localhost"
-    port: int = 6379
-    password: str | None = None
-
-
-class WebhookSettings(BaseModel):
-    domain: str
-    path: str
-    secret: str = secrets.token_urlsafe(32)
-
-    app_host: str = "0.0.0.0"
-    app_port: int = 8000
-
-    @computed_field
-    @property
-    def url(self) -> str:
-        return "https://" + self.domain + self.path
 
 
 class Settings(BaseSettings):
@@ -99,6 +58,3 @@ class Settings(BaseSettings):
 
         env_nested_delimiter = "__"
         env_prefix = "gorzdrav_"
-
-
-settings = Settings()
