@@ -2,6 +2,7 @@ import operator
 
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager, Window
+from aiogram_dialog.widgets.common import sync_scroll
 from aiogram_dialog.widgets.kbd import ScrollingGroup, Select
 from aiogram_dialog.widgets.text import (
     Format,
@@ -11,7 +12,6 @@ from aiogram_dialog.widgets.text import (
 )
 
 from src.bot.logic.make_appointment.states import AppointmentStates
-from src.bot.utils.aio_dialog import sync_scroll
 from src.bot.utils.buttons import get_back_button
 from src.gorzdrav_api import GorZdravAPI
 

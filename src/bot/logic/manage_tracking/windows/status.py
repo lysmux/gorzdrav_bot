@@ -21,6 +21,7 @@ KB_WIDTH = 2
 
 WINDOW_NAME = "tracking_status"
 SCROLL_ID = f"{WINDOW_NAME}_scroll"
+LIST_ID = f"{WINDOW_NAME}_list"
 
 
 async def data_getter(
@@ -71,6 +72,7 @@ window = Window(
             ),
             items="filtered_appointments",
             item_id_getter=operator.itemgetter(0),
+            id=LIST_ID
         ),
         id=SCROLL_ID,
         height=KB_HEIGHT,

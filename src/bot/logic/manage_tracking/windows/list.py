@@ -3,6 +3,7 @@ import operator
 from aiogram import F
 from aiogram.types import User, CallbackQuery
 from aiogram_dialog import Window, DialogManager
+from aiogram_dialog.widgets.common import sync_scroll
 from aiogram_dialog.widgets.kbd import ScrollingGroup, Select
 from aiogram_dialog.widgets.text import (
     Jinja,
@@ -13,7 +14,6 @@ from aiogram_dialog.widgets.text import (
 )
 
 from src.bot.logic.manage_tracking.states import TrackingStates
-from src.bot.utils.aio_dialog import sync_scroll
 from src.bot.utils.buttons import get_menu_button
 from src.database.models import TrackingModel
 from src.database.repositories import Repository

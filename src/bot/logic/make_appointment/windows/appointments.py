@@ -27,6 +27,7 @@ KB_WIDTH = 2
 
 WINDOW_NAME = "appointments"
 SCROLL_ID = f"{WINDOW_NAME}_scroll"
+LIST_ID = f"{WINDOW_NAME}_list"
 ADD_TRACKING_BTN_ID = f"{WINDOW_NAME}_add_tracking_btn"
 
 
@@ -74,6 +75,7 @@ window = Window(
             ),
             items="appointments",
             item_id_getter=operator.itemgetter(0),
+            id=LIST_ID
         ),
         id=SCROLL_ID,
         height=KB_HEIGHT,
