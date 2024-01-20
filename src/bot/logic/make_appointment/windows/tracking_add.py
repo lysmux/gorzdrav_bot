@@ -10,7 +10,6 @@ from aiogram_dialog.widgets.input import TextInput, ManagedTextInput
 from aiogram_dialog.widgets.kbd import Select, Group
 from aiogram_dialog.widgets.text import Jinja, Format, Const
 
-from src.bot import keyboard_texts
 from src.bot.logic.make_appointment.states import AppointmentStates
 from src.bot.utils.buttons import get_back_button
 from src.database.models import UserModel, TrackingModel
@@ -34,10 +33,10 @@ class TimeRangeEnum(StrEnum):
 async def data_getter(**kwargs) -> dict:
     return {
         "ranges": (
-            (keyboard_texts.tracking.MORNING, TimeRangeEnum.MORNING),
-            (keyboard_texts.tracking.AFTERNOON, TimeRangeEnum.AFTERNOON),
-            (keyboard_texts.tracking.EVENING, TimeRangeEnum.EVENING),
-            (keyboard_texts.tracking.ALL_DAY, TimeRangeEnum.ALL_DAY),
+            (src.bot.multimedia.keyboard_texts.tracking.MORNING, TimeRangeEnum.MORNING),
+            (src.bot.multimedia.keyboard_texts.tracking.AFTERNOON, TimeRangeEnum.AFTERNOON),
+            (src.bot.multimedia.keyboard_texts.tracking.EVENING, TimeRangeEnum.EVENING),
+            (src.bot.multimedia.keyboard_texts.tracking.ALL_DAY, TimeRangeEnum.ALL_DAY),
         )
     }
 

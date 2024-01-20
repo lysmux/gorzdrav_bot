@@ -4,8 +4,8 @@ from aiogram_dialog import Window, DialogManager
 from aiogram_dialog.widgets.kbd import Group, SwitchTo, Button
 from aiogram_dialog.widgets.text import Jinja, Const
 
-from src.bot import keyboard_texts
 from src.bot.logic.manage_tracking.states import TrackingStates
+from src.bot.multimedia import keyboard_texts
 from src.bot.services.appointments_checker import CheckerStorageProxy
 from src.bot.utils.buttons import get_back_button
 from src.database.models import TrackingModel
