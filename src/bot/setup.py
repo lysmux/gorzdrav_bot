@@ -48,9 +48,12 @@ def get_storage(settings: Settings) -> BaseStorage:
     return storage
 
 
-def get_dispatcher(settings: Settings) -> Dispatcher:
+def get_dispatcher(
+        settings: Settings,
+        transfer_data: TransferStruct
+) -> Dispatcher:
     storage = get_storage(settings=settings)
-    dispatcher = Dispatcher(storage=storage)
+    dispatcher = Dispatcher(storage=storage, **transfer_data)
 
     # setup routers
     dispatcher.include_routers(
@@ -79,17 +82,15 @@ def get_dispatcher(settings: Settings) -> Dispatcher:
 
 async def run_as_pooling(
         bot: Bot,
-        dispatcher: Dispatcher,
-        transfer_data: TransferStruct
+        dispatcher: Dispatcher
 ) -> None:
     await bot.delete_webhook(drop_pending_updates=True)
-    await dispatcher.start_polling(bot, **transfer_data)
+    await dispatcher.start_polling(bot)
 
 
 async def run_as_webhook(
         bot: Bot,
         dispatcher: Dispatcher,
-        transfer_data: TransferStruct,
         webhook_settings: WebhookSettings
 ) -> None:
     app = web.Application()
@@ -99,8 +100,7 @@ async def run_as_webhook(
     webhook_requests_handler = SimpleRequestHandler(
         dispatcher=dispatcher,
         bot=bot,
-        secret_token=webhook_settings.secret,
-        **transfer_data
+        secret_token=webhook_settings.secret
     )
     webhook_requests_handler.register(app, path=webhook_settings.path)
     setup_application(app, dispatcher)

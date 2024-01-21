@@ -19,7 +19,10 @@ logger = logging.getLogger(__name__)
 
 async def run_bot(settings: Settings):
     engine = get_engine(db_settings=settings.db)
-    dispatcher = get_dispatcher(settings=settings)
+    dispatcher = get_dispatcher(
+        settings=settings,
+        transfer_data=TransferStruct(engine=engine)
+    )
 
     # setup bot
     bot = Bot(token=settings.bot.token, parse_mode=ParseMode.HTML)
@@ -44,14 +47,12 @@ async def run_bot(settings: Settings):
             task = run_as_webhook(
                 bot=bot,
                 dispatcher=dispatcher,
-                transfer_data=TransferStruct(engine=engine),
                 webhook_settings=settings.webhook
             )
         else:
             task = run_as_pooling(
                 bot=bot,
-                dispatcher=dispatcher,
-                transfer_data=TransferStruct(engine=engine)
+                dispatcher=dispatcher
             )
 
         tg.create_task(task)
