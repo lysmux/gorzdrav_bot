@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram_dialog import StartMode, DialogManager
 
-from src.bot.logic.admin.states import AdminStates
+from .states import AdminStates
 
 router = Router()
 

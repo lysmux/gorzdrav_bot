@@ -9,6 +9,8 @@ from sqlalchemy.sql.functions import count
 from ..models import BaseModel
 
 AbstractModel = TypeVar("AbstractModel", bound=BaseModel)
+ClauseExp = ColumnExpressionArgument | tuple[ColumnExpressionArgument, ...]
+OrderExp = InstrumentedAttribute | tuple[InstrumentedAttribute, ...]
 
 
 class AbstractRepo(ABC, Generic[AbstractModel]):
@@ -26,7 +28,7 @@ class AbstractRepo(ABC, Generic[AbstractModel]):
 
     async def delete(
             self,
-            clause: ColumnExpressionArgument | tuple[ColumnExpressionArgument]
+            clause: ClauseExp
     ) -> None:
         if not isinstance(clause, tuple):
             clause = (clause,)
@@ -36,7 +38,7 @@ class AbstractRepo(ABC, Generic[AbstractModel]):
 
     async def get(
             self,
-            clause: ColumnExpressionArgument | tuple[ColumnExpressionArgument]
+            clause: ClauseExp
     ) -> AbstractModel:
         if not isinstance(clause, tuple):
             clause = (clause,)
@@ -48,8 +50,8 @@ class AbstractRepo(ABC, Generic[AbstractModel]):
 
     async def get_all_iter(
             self,
-            clause: ColumnExpressionArgument | tuple[ColumnExpressionArgument] | None = None,
-            order_by: InstrumentedAttribute | tuple[InstrumentedAttribute] | None = None,
+            clause: ClauseExp | None = None,
+            order_by: OrderExp | None = None,
             limit: int = None
     ) -> ScalarResult[AbstractModel]:
         stmt = select(self.model_type).limit(limit)
@@ -70,8 +72,8 @@ class AbstractRepo(ABC, Generic[AbstractModel]):
 
     async def get_all(
             self,
-            clause: ColumnExpressionArgument | tuple[ColumnExpressionArgument] | None = None,
-            order_by: InstrumentedAttribute | tuple[InstrumentedAttribute] | None = None,
+            clause: ClauseExp | None = None,
+            order_by: OrderExp | None = None,
             limit: int = None
     ) -> Sequence[AbstractModel]:
         result = await self.get_all_iter(
@@ -84,7 +86,7 @@ class AbstractRepo(ABC, Generic[AbstractModel]):
 
     async def count(
             self,
-            clause: ColumnExpressionArgument | tuple[ColumnExpressionArgument] | None = None
+            clause: ClauseExp | None = None
     ) -> int:
         stmt = select(count()).select_from(self.model_type)
 

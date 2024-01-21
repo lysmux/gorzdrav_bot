@@ -3,8 +3,8 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
-from src.bot.logic.general.states import MenuStates
 from src.bot.utils.template_engine import render_template
+from .states import MenuStates
 
 router = Router()
 

@@ -10,7 +10,7 @@ from aiohttp import web
 from cashews import cache
 from redis.asyncio import Redis
 
-from src.bot.logic import routers
+from src.bot.logic import errors, general, make_appointment, manage_tracking, admin
 from src.bot.middlewares import (
     GorZdravAPIMiddleware, DatabaseMiddleware, UserMiddleware
 )
@@ -53,7 +53,13 @@ def get_dispatcher(settings: Settings) -> Dispatcher:
     dispatcher = Dispatcher(storage=storage)
 
     # setup routers
-    dispatcher.include_routers(*routers)
+    dispatcher.include_routers(
+        errors.get_router(),
+        general.get_router(),
+        make_appointment.get_router(),
+        manage_tracking.get_router(),
+        admin.get_router()
+    )
 
     # setup middlewares
     database_mid = DatabaseMiddleware()
