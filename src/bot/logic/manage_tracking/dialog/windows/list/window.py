@@ -41,9 +41,9 @@ window = Window(
 
     ScrollingGroup(
         Select(
-            Format("{item[1].id}"),
+            Format("{pos}"),
             items="user_tracking",
-            item_id_getter=operator.itemgetter(0),
+            item_id_getter=operator.attrgetter("id"),
             id=SELECT_ID,
             type_factory=int,
             on_click=select_tracking

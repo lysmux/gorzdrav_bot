@@ -1,5 +1,3 @@
-import operator
-
 from aiogram import F
 from aiogram_dialog import Window
 from aiogram_dialog.widgets.kbd import (
@@ -32,11 +30,11 @@ window = Window(
     ScrollingGroup(
         ListGroup(
             Url(
-                text=Format("{item[1].time_str}"),
+                text=Format("{item.time_str}"),
                 url=Format("{data[appointment_url]}")
             ),
             items="filtered_appointments",
-            item_id_getter=operator.itemgetter(0),
+            item_id_getter=lambda data: "url",
             id=LIST_ID
         ),
         id=SCROLL_ID,

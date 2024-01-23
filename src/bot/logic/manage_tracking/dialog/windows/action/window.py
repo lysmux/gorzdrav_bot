@@ -1,5 +1,5 @@
 from aiogram_dialog import Window
-from aiogram_dialog.widgets.kbd import Group, SwitchTo
+from aiogram_dialog.widgets.kbd import Group, SwitchTo, Button
 from aiogram_dialog.widgets.text import Jinja, Const
 
 from src.bot.logic.manage_tracking.states import TrackingStates
@@ -18,10 +18,9 @@ window = Window(
             id=STATUS_BTN_ID,
             state=TrackingStates.status
         ),
-        SwitchTo(
+        Button(
             Const(keyboard_texts.tracking.DELETE),
             id=DELETE_BTN_ID,
-            state=TrackingStates.deleted,
             on_click=delete_tracking
         ),
         width=2

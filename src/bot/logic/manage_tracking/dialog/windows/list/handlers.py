@@ -9,13 +9,11 @@ async def select_tracking(
         callback: CallbackQuery,
         widget: Select,
         manager: DialogManager,
-        item_id: int,
+        tracking_id: int,
 ) -> None:
     """
         Switch to the action selection
     """
-    user_tracking = manager.dialog_data["user_tracking"]
-    selected_tracking = user_tracking[item_id]
-    manager.dialog_data["selected_tracking"] = selected_tracking
+    manager.dialog_data["selected_tracking"] = tracking_id
 
     await manager.switch_to(TrackingStates.action)

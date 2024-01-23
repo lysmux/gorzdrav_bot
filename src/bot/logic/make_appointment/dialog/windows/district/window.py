@@ -12,8 +12,8 @@ from .handlers import select_district
 KB_HEIGHT = 4
 KB_WIDTH = 2
 
-SCROLL_ID = "districts_scroll"
-SELECT_ID = "districts_select"
+SCROLL_ID = "district_scroll"
+SELECT_ID = "district_select"
 
 window = Window(
     Jinja("make_appointment/district/header.html"),
