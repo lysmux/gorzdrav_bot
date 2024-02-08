@@ -1,70 +1,87 @@
-import asyncio
 import logging
+from contextlib import suppress
 
 from aiogram import Bot
+from aiogram.filters.callback_data import CallbackData
 from aiogram.fsm.storage.base import BaseStorage
-from aiogram_dialog import BgManagerFactory
-from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
+from src.bot.multimedia import keyboard_texts
 from src.bot.utils.template_engine import render_template
 from src.database.models import TrackingModel
 from src.database.repositories import TrackingRepo
 from src.gorzdrav_api import GorZdravAPI
+from src.gorzdrav_api.exceptions import GorZdravError
 from src.gorzdrav_api.schemas import Appointment
 from src.gorzdrav_api.utils import filter_appointments
-from src.settings import Settings
-from .storage import CheckerStorageProxy
+from .storage import StorageProxy
 
 logger = logging.getLogger(__name__)
+
+
+class TrackingCallback(CallbackData, prefix="tracking"):
+    id: int
 
 
 class AppointmentsChecker:
     def __init__(
             self,
-            db_engine: AsyncEngine,
             bot: Bot,
             storage: BaseStorage,
-            manager_factory: BgManagerFactory,
-            settings: Settings
+            session_maker: async_sessionmaker
     ) -> None:
-        self.db_engine = db_engine
         self.bot = bot
         self.storage = storage
-        self.manager_factory = manager_factory
-        self.settings = settings
+        self.session_maker = session_maker
 
     async def is_notified(
             self,
             tracking: TrackingModel,
-            appointments: list[Appointment]
+            appointments: tuple[Appointment, ...]
     ) -> bool:
         """
         Checks if the notification has already been sent
         """
-        storage_proxy = CheckerStorageProxy(
+        storage_proxy = StorageProxy(
             storage=self.storage,
-            bot=self.bot,
-            tracking=tracking
+            bot_id=self.bot.id,
+            user_id=tracking.user.tg_id
         )
 
-        last_appointments = await storage_proxy.get_appointments()
+        data = await storage_proxy.get_data()
+        last_hash = data.get(tracking.id)
+        current_hash = hash(appointments)
 
-        if appointments == last_appointments:
-            logger.debug(f"Tracking<ID {tracking.id}> notification has already been sent")
+        if last_hash and current_hash == last_hash:
+            logger.debug(f"Tracking<ID {tracking.id}> "
+                         f"notification has already been sent")
             return True
-        else:
-            logger.debug(f"Tracking<ID {tracking.id}> notification sent")
-            await storage_proxy.set_appointments(appointments=appointments)
-            return False
+
+        data[tracking.id] = current_hash
+        await storage_proxy.set_data(data=data)
+        return False
 
     async def notify(self, tracking: TrackingModel) -> None:
         """
         Notifies user
         """
+
+        markup_builder = InlineKeyboardBuilder()
+        markup_builder.button(
+            text=keyboard_texts.checker.SEE_APPOINTMENTS,
+            callback_data=TrackingCallback(id=tracking.id).pack()
+        )
         await self.bot.send_message(
             chat_id=tracking.user.tg_id,
-            text=render_template("tracking/new_appointments.html", tracking=tracking),
+            text=render_template(
+                "tracking/new_appointments.html",
+                tracking=tracking
+            ),
+            reply_markup=markup_builder.as_markup()
         )
+
+        logger.debug(f"Tracking<ID {tracking.id}> notification sent")
 
     async def check(self, tracking: TrackingModel):
         """
@@ -96,23 +113,12 @@ class AppointmentsChecker:
         Gets all tracking from database and checks each
         """
 
-        async with AsyncSession(bind=self.db_engine) as session:
+        async with self.session_maker() as session:
             repository = TrackingRepo(session=session)
             all_tracking = await repository.get_all_iter(
                 order_by=(TrackingModel.clinic, TrackingModel.doctor)
             )
 
         for tracking in all_tracking:
-            await self.check(tracking)
-
-    async def run(self) -> None:
-        """
-        The main loop that calls the check every `settings.check_every` minutes
-        """
-        while True:
-            logger.info("The tracking check is started")
-            await self.check_all()
-            logger.info(f"The tracking check is finished. "
-                        f"Repeat after {self.settings.check_every} minutes")
-
-            await asyncio.sleep(self.settings.check_every * 60)
+            with suppress(GorZdravError):
+                await self.check(tracking)

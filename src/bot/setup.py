@@ -12,7 +12,10 @@ from redis.asyncio import Redis
 
 from src.bot.logic import errors, general, make_appointment, manage_tracking, admin
 from src.bot.middlewares import (
-    GorZdravAPIMiddleware, DatabaseMiddleware, UserMiddleware
+    GorZdravAPIMiddleware,
+    DatabaseMiddleware,
+    UserMiddleware,
+    StorageProxyMiddleware
 )
 from src.bot.structures import TransferStruct
 from src.bot.utils.redis_storage import RedisPickleStorage
@@ -66,16 +69,18 @@ def get_dispatcher(
 
     # setup middlewares
     database_mid = DatabaseMiddleware()
-    dispatcher.message.middleware(database_mid)
-    dispatcher.callback_query.middleware(database_mid)
-
+    storage_proxy_mid = StorageProxyMiddleware()
+    user_mid = UserMiddleware(admins=settings.admins)
     gorzdrav_api_mid = GorZdravAPIMiddleware()
-    dispatcher.message.middleware(gorzdrav_api_mid)
-    dispatcher.callback_query.middleware(gorzdrav_api_mid)
 
-    user_mid = UserMiddleware()
-    dispatcher.message.middleware(user_mid)
-    dispatcher.callback_query.middleware(user_mid)
+    for mid in (
+            database_mid,
+            storage_proxy_mid,
+            user_mid,
+            gorzdrav_api_mid
+    ):
+        dispatcher.message.middleware(mid)
+        dispatcher.callback_query.middleware(mid)
 
     return dispatcher
 

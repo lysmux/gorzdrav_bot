@@ -2,12 +2,14 @@ from . import (
     general,
     make_appointment,
     tracking,
-    admin
+    admin,
+    checker
 )
 
 __all__ = [
     "general",
     "make_appointment",
     "tracking",
-    "admin"
+    "admin",
+    "checker"
 ]
