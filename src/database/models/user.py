@@ -18,5 +18,5 @@ class UserModel(BaseModel):
         back_populates="user",
         lazy="selectin",
         uselist=True,
-        order_by="tracking.clinic"
+        order_by="TrackingModel.clinic"
     )
