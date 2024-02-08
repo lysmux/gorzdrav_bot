@@ -20,10 +20,11 @@ window = Window(
     # Text
     Case(
         {
-            False: Jinja("tracking/status_header.html"),
-            True: Jinja("make_appointment/appointment/no_appointments.html"),
+            None: Jinja("tracking/status_header.html"),
+            "not_exists": Jinja("tracking/not_exists.html"),
+            "no_appointments": Jinja("make_appointment/appointment/no_appointments.html")
         },
-        selector=F["filtered_appointments"].len() == 0
+        selector=F["error"]
     ),
 
     # Appointments keyboard
@@ -33,13 +34,14 @@ window = Window(
                 text=Format("{item.time_str}"),
                 url=Format("{data[appointment_url]}")
             ),
-            items="filtered_appointments",
+            items="appointments",
             item_id_getter=lambda data: "url",
             id=LIST_ID
         ),
         id=SCROLL_ID,
         height=KB_HEIGHT,
-        width=KB_WIDTH
+        width=KB_WIDTH,
+        when=F["error"].is_(None)
     ),
 
     # Navigation

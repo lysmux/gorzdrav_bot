@@ -5,7 +5,7 @@ from aiogram_dialog import DialogManager
 from src.database import Repository
 from src.database.models import TrackingModel
 from src.gorzdrav_api import GorZdravAPI
-from src.gorzdrav_api.utils import filter_appointments, generate_gorzdrav_url
+from src.gorzdrav_api.utils import generate_gorzdrav_url
 
 
 async def data_getter(
@@ -14,18 +14,12 @@ async def data_getter(
         repository: Repository,
         **kwargs
 ) -> dict[str, Any]:
-    tracking_id: int = dialog_manager.dialog_data["selected_tracking"]
+    if selected_tracking := dialog_manager.start_data.get("selected_tracking"):
+        tracking_id: int = selected_tracking
+    else:
+        tracking_id: int = dialog_manager.dialog_data["selected_tracking"]
+
     tracking = await repository.tracking.get(clause=TrackingModel.id == tracking_id)
-
-    appointments = await gorzdrav_api.get_appointments(
-        clinic=tracking.clinic,
-        doctor=tracking.doctor
-    )
-    filtered_appointments = filter_appointments(
-        appointments=appointments,
-        hours=tracking.hours
-    )
-
     appointment_url = generate_gorzdrav_url(
         district=tracking.district,
         clinic=tracking.clinic,
@@ -33,8 +27,22 @@ async def data_getter(
         doctor=tracking.doctor,
     )
 
+    if tracking:
+        appointments = await gorzdrav_api.get_appointments(
+            clinic=tracking.clinic,
+            doctor=tracking.doctor
+        )
+
+        if appointments:
+            return {
+                "tracking": tracking,
+                "appointments": appointments,
+                "appointment_url": appointment_url
+            }
+        return {
+            "error": "no_appointments"
+        }
+
     return {
-        "tracking": tracking,
-        "filtered_appointments": filtered_appointments,
-        "appointment_url": appointment_url
+        "error": "not_exists",
     }
