@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.filters import or_f, Command
+from aiogram.filters import or_f, Command, MagicData
 
 from . import handlers, dialog
 
@@ -17,11 +17,11 @@ def get_router() -> Router:
             Command(commands=COMMANDS),
             ~F.text.startswith("/")
         ),
-        # F.from_user.id.in_(settings.admins)
+        MagicData(F["user_is_admin"].is_(True))
     )
-    # router.callback_query.filter(
-    #     F.from_user.id.in_(settings.admins)
-    # )
+    router.callback_query.filter(
+        MagicData(F["user_is_admin"].is_(True))
+    )
 
     router.include_routers(
         handlers.router,
