@@ -1,3 +1,5 @@
+from typing import cast
+
 from aiogram import Router, Bot
 from aiogram.filters import ExceptionTypeFilter
 from aiogram.types import ErrorEvent, User
@@ -14,7 +16,8 @@ async def server_error_handler(
         event_from_user: User,
         bot: Bot
 ) -> None:
+    exception = cast(GorZdravError, event.exception)
     await bot.send_message(
         chat_id=event_from_user.id,
-        text=render_template("errors/api_error.html")
+        text=render_template("errors/api_error.html", error_msg=exception.message)
     )
