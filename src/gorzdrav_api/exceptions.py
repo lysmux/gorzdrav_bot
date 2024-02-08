@@ -18,5 +18,5 @@ class ApiError(GorZdravError):
 
 
 class ResponseParseError(GorZdravError):
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Response parse error, message: {self.message}"

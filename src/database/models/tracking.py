@@ -10,7 +10,7 @@ from src.gorzdrav_api.schemas import (
     District, Clinic, Speciality, Doctor
 )
 from .base import BaseModel
-from ..types import PydanticType
+from ..sqlalchemy_types import PydanticType
 
 if TYPE_CHECKING:
     from .user import UserModel

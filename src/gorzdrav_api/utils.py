@@ -1,9 +1,11 @@
 import json
-from itertools import chain
+from typing import Sequence
 from urllib.parse import quote
 
 from .schemas import (
-    District, Clinic, Speciality, Doctor, Appointment
+    District, Clinic,
+    Speciality, Doctor,
+    Appointment
 )
 
 
@@ -22,17 +24,17 @@ def generate_gorzdrav_url(
         {"doctor": doctor.id},
     ]
 
-    params = json.dumps(params, separators=(",", ":"))
-    params = quote(params, safe="/,+:=")
+    str_params = json.dumps(params, separators=(",", ":"))
+    str_params = quote(str_params, safe="/,+:=")
 
-    return base_url + params
+    return base_url + str_params
 
 
 def filter_appointments(
-        appointments: list[Appointment],
+        appointments: Sequence[Appointment],
         hours: set[int]
-) -> list[Appointment]:
-    filtered_appointments = list(filter(
+) -> tuple[Appointment, ...]:
+    filtered_appointments = tuple(filter(
         lambda x: x.time.hour in hours, appointments
     ))
 

@@ -4,7 +4,7 @@ from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
 from src.bot.utils.template_engine import render_template
-from .states import MenuStates
+from .states import GeneralStates
 
 router = Router()
 
@@ -15,7 +15,7 @@ async def start_handler(
         dialog_manager: DialogManager
 ) -> None:
     await dialog_manager.start(
-        MenuStates.menu,
+        GeneralStates.menu,
         mode=StartMode.RESET_STACK
     )
 

@@ -8,6 +8,6 @@ jinja_env = Environment(
 )
 
 
-def render_template(name: str, **kwargs):
+def render_template(name: str, **kwargs) -> str:
     template = jinja_env.get_template(name)
     return template.render(**kwargs)

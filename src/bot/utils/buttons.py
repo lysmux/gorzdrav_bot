@@ -2,7 +2,7 @@ from aiogram.fsm.state import State
 from aiogram_dialog.widgets.kbd import Start, SwitchTo
 from aiogram_dialog.widgets.text import Const
 
-from src.bot.logic.general.states import MenuStates
+from src.bot.logic.general.states import GeneralStates
 from src.bot.multimedia import keyboard_texts
 
 MENU_BTN_ID = "menu_btn"
@@ -13,7 +13,7 @@ def get_menu_button() -> Start:
     return Start(
         Const(keyboard_texts.general.MENU),
         id=MENU_BTN_ID,
-        state=MenuStates.menu
+        state=GeneralStates.menu
     )
 
 

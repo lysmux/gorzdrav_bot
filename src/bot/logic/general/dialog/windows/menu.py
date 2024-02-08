@@ -1,9 +1,10 @@
+from aiogram import F
 from aiogram_dialog import Window
 from aiogram_dialog.widgets.kbd import Group, Start
 from aiogram_dialog.widgets.text import Jinja, Const
 
 from src.bot.logic.admin.states import AdminStates
-from src.bot.logic.general.states import MenuStates
+from src.bot.logic.general.states import GeneralStates
 from src.bot.logic.make_appointment.states import AppointmentStates
 from src.bot.logic.manage_tracking.states import TrackingStates
 from src.bot.multimedia import keyboard_texts
@@ -27,11 +28,11 @@ window = Window(
         ),
         Start(
             Const(keyboard_texts.general.ADMIN_PANEL),
-            # when=F["event"].from_user.id.in_(settings.admins),
+            when=F["middleware_data"]["user_is_admin"].is_(True),
             id=ADMIN_PANEL_BTN_ID,
             state=AdminStates.action
         ),
         width=2
     ),
-    state=MenuStates.menu
+    state=GeneralStates.menu
 )

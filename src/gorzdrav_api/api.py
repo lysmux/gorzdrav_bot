@@ -19,9 +19,10 @@ HEADERS = {
 
 type Response[T] = tuple[T, ...]
 
+
 class GorZdravAPI:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._http_client = ClientSession()
 
     async def make_request[P](
@@ -52,7 +53,7 @@ class GorZdravAPI:
         try:
             deserialized_data = await response.json()
         except ContentTypeError as exc:
-            logging.exception(f"Deserialization error", exc_info=exc)
+            logging.exception("Deserialization error", exc_info=exc)
             raise exceptions.ResponseParseError(message=exc.message)
 
         match deserialized_data["errorCode"]:
@@ -67,7 +68,7 @@ class GorZdravAPI:
                 code = deserialized_data["errorCode"]
                 message = deserialized_data["message"]
 
-                logging.error(f"API returned code {code} with message {message}")
+                logging.error(f"API returned {code} with message {message}")
                 raise exceptions.ApiError(code=code, message=message)
 
     @cache.soft(ttl="24h", soft_ttl="3h", key="districts")
@@ -79,7 +80,10 @@ class GorZdravAPI:
         )
 
     @cache.soft(ttl="24h", soft_ttl="3h", key="clinics:{district.id}")
-    async def get_clinics(self, district: schemas.District) -> Response[schemas.Clinic]:
+    async def get_clinics(
+            self,
+            district: schemas.District
+    ) -> Response[schemas.Clinic]:
         return await self.make_request(
             method="GET",
             url_part=f"shared/district/{district.id}/lpus",
@@ -87,7 +91,10 @@ class GorZdravAPI:
         )
 
     @cache.soft(ttl="24h", soft_ttl="3h", key="specialities:{clinic.id}")
-    async def get_specialities(self, clinic: schemas.Clinic) -> Response[schemas.Speciality]:
+    async def get_specialities(
+            self,
+            clinic: schemas.Clinic
+    ) -> Response[schemas.Speciality]:
         return await self.make_request(
             method="GET",
             url_part=f"schedule/lpu/{clinic.id}/specialties",
@@ -104,7 +111,8 @@ class GorZdravAPI:
 
         return await self.make_request(
             method="GET",
-            url_part=f"schedule/lpu/{clinic.id}/speciality/{speciality_id}/doctors",
+            url_part=f"schedule/lpu/{clinic.id}/"
+                     f"speciality/{speciality_id}/doctors",
             response_model=Response[schemas.Doctor]
         )
 
@@ -116,12 +124,13 @@ class GorZdravAPI:
     ) -> Response[schemas.Appointment]:
         return await self.make_request(
             method="GET",
-            url_part=f"schedule/lpu/{clinic.id}/doctor/{doctor.id}/appointments",
+            url_part=f"schedule/lpu/{clinic.id}/"
+                     f"doctor/{doctor.id}/appointments",
             response_model=Response[schemas.Appointment]
         )
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "GorZdravAPI":
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         await self._http_client.close()
