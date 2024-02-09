@@ -1,4 +1,5 @@
 from aiogram.fsm.state import State
+from aiogram_dialog import StartMode
 from aiogram_dialog.widgets.kbd import Start, SwitchTo
 from aiogram_dialog.widgets.text import Const
 
@@ -13,7 +14,8 @@ def get_menu_button() -> Start:
     return Start(
         Const(keyboard_texts.general.MENU),
         id=MENU_BTN_ID,
-        state=GeneralStates.menu
+        state=GeneralStates.menu,
+        mode=StartMode.RESET_STACK
     )
 
 
