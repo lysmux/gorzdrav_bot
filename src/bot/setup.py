@@ -69,18 +69,22 @@ def get_dispatcher(
 
     # setup middlewares
     database_mid = DatabaseMiddleware()
-    storage_proxy_mid = StorageProxyMiddleware()
     user_mid = UserMiddleware(admins=settings.admins)
+    storage_proxy_mid = StorageProxyMiddleware()
     gorzdrav_api_mid = GorZdravAPIMiddleware()
 
     for mid in (
-            database_mid,
             storage_proxy_mid,
-            user_mid,
             gorzdrav_api_mid
     ):
         dispatcher.message.middleware(mid)
         dispatcher.callback_query.middleware(mid)
+    for mid in (
+            database_mid,
+            user_mid
+    ):
+        dispatcher.message.outer_middleware(mid)
+        dispatcher.callback_query.outer_middleware(mid)
 
     return dispatcher
 
