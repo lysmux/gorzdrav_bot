@@ -41,7 +41,7 @@ window = Window(
         id=SCROLL_ID,
         height=KB_HEIGHT,
         width=KB_WIDTH,
-        when=F["error"].is_(None)
+        when=F.not_contains("error") | F["error"].is_(None)
     ),
 
     # Navigation
