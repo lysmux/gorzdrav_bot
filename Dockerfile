@@ -1,4 +1,4 @@
-FROM python:3.11.6-alpine AS builder
+FROM python:3.12.2-alpine AS builder
 LABEL stage=builder
 
 ENV PIP_NO_CACHE_DIR=off \
@@ -14,7 +14,7 @@ RUN python -m pip install --no-cache-dir poetry==$POETRY_VERSION \
     && poetry install --without dev --no-interaction --no-ansi
 
 
-FROM python:3.11.6-alpine
+FROM python:3.12.2-alpine
 
 WORKDIR /app
 
