@@ -1,5 +1,6 @@
 from itertools import groupby
 from operator import sub, itemgetter
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Integer, ARRAY, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -9,15 +10,17 @@ from src.gorzdrav_api.schemas import (
     District, Clinic, Speciality, Doctor
 )
 from .base import BaseModel
-from .user import UserModel
-from ..types import PydanticType
+from ..sqlalchemy_types import PydanticType
+
+if TYPE_CHECKING:
+    from .user import UserModel
 
 
 class TrackingModel(BaseModel):
     __tablename__ = "tracking"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    user: Mapped[UserModel] = relationship(backref="tracking", lazy="selectin", uselist=False)
+    user: Mapped["UserModel"] = relationship(back_populates="tracking", lazy="selectin", uselist=False)
 
     hours: Mapped[set[int]] = mapped_column(ARRAY(Integer), nullable=False)
 

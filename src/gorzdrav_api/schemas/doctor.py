@@ -11,7 +11,7 @@ class Doctor(Model):
     area: str | None = Field(alias="ariaNumber")
     free_appointments: int = Field(alias="freeParticipantCount")
 
-    @computed_field
+    @computed_field  # type: ignore[misc]
     @property
     def short_name(self) -> str:
         return re.sub(r"(?<= \w)\w+", ".", self.name)

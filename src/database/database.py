@@ -1,16 +1,17 @@
 import logging
 
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from src.config import settings
+from src.settings import DatabaseSettings
 
 logger = logging.getLogger(__name__)
 
 
-def get_engine() -> AsyncEngine:
-    engine = create_async_engine(settings.db.url, pool_pre_ping=True)
+def get_session_maker(db_settings: DatabaseSettings) -> async_sessionmaker:
+    engine = create_async_engine(db_settings.url, pool_pre_ping=True)
+    session_maker = async_sessionmaker(bind=engine)
 
-    logger.info(f"Database <{settings.db.database}> on "
-                f"{settings.db.host}:{settings.db.port}")
+    logger.info(f"Database <{db_settings.database}> on "
+                f"{db_settings.host}:{db_settings.port}")
 
-    return engine
+    return session_maker
