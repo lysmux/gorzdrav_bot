@@ -28,7 +28,8 @@ async def save_tracking(
     tracking = await repository.tracking.get(
         clause=(
             TrackingModel.clinic == clinic,
-            TrackingModel.doctor == doctor
+            TrackingModel.doctor == doctor,
+            TrackingModel.user == user
         )
     )
 
