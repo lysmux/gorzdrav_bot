@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from src.database import Repository
 from src.database.models import UserModel
 from src.gorzdrav_api import GorZdravAPI
-from src.services.appointments_checker import StorageProxy
 
 
 class TransferStruct(TypedDict, total=False):
@@ -18,7 +17,6 @@ class TransferStruct(TypedDict, total=False):
 
     session_maker: async_sessionmaker
     repository: Repository
-    storage_proxy: StorageProxy
 
     gorzdrav_api: GorZdravAPI
 

@@ -4,9 +4,11 @@ from aiogram.types import ErrorEvent, CallbackQuery, Message
 from aiogram_dialog import DialogManager, ShowMode, StartMode
 from aiogram_dialog.api.exceptions import UnknownIntent, UnknownState
 
-from src.bot.logic.general.states import GeneralStates
+from src.bot.logic.dialogs.general.states import GeneralStates
 
-router = Router()
+ROUTER_NAME = "dialog_errors"
+
+router = Router(name=ROUTER_NAME)
 
 
 @router.error(ExceptionTypeFilter(UnknownIntent))

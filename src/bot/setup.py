@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import timedelta
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.base import BaseStorage
@@ -10,12 +11,11 @@ from aiohttp import web
 from cashews import cache
 from redis.asyncio import Redis
 
-from src.bot.logic import errors, general, make_appointment, manage_tracking, admin
+from src.bot.logic import handlers, dialogs, errors
 from src.bot.middlewares import (
     GorZdravAPIMiddleware,
     DatabaseMiddleware,
-    UserMiddleware,
-    StorageProxyMiddleware
+    UserMiddleware
 )
 from src.bot.structures import TransferStruct
 from src.bot.utils.redis_storage import RedisPickleStorage
@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 def get_storage(settings: Settings) -> BaseStorage:
     if settings.use_redis:
         logger.info("Using Redis for cache")
+        ttl = timedelta(weeks=1)
         redis = Redis(
             host=settings.redis.host,
             port=settings.redis.port,
@@ -34,7 +35,9 @@ def get_storage(settings: Settings) -> BaseStorage:
         )
         storage = RedisPickleStorage(
             redis,
-            key_builder=DefaultKeyBuilder(with_destiny=True)
+            key_builder=DefaultKeyBuilder(with_destiny=True),
+            data_ttl=ttl,
+            state_ttl=ttl
         )
         cache.setup(
             f"redis://{settings.redis.host}:{settings.redis.port}",
@@ -60,22 +63,18 @@ def get_dispatcher(
 
     # setup routers
     dispatcher.include_routers(
-        errors.get_router(),
-        general.get_router(),
-        make_appointment.get_router(),
-        manage_tracking.get_router(),
-        admin.get_router()
+        *errors.routers,
+        *handlers.routers,
+        *dialogs.routers,
     )
 
     # setup middlewares
     database_mid = DatabaseMiddleware()
     user_mid = UserMiddleware(admins=settings.admins)
-    storage_proxy_mid = StorageProxyMiddleware()
     gorzdrav_api_mid = GorZdravAPIMiddleware()
 
     for mid in (
-            storage_proxy_mid,
-            gorzdrav_api_mid
+            gorzdrav_api_mid,
     ):
         dispatcher.message.middleware(mid)
         dispatcher.callback_query.middleware(mid)

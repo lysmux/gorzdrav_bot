@@ -1,3 +1,7 @@
-from .router import get_router
+from . import general, gorzdrav, dialog
 
-__all__ = ["get_router"]
+routers = (
+    general.router,
+    gorzdrav.router,
+    dialog.router
+)

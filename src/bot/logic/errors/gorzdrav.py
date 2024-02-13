@@ -7,7 +7,9 @@ from aiogram.types import ErrorEvent, User
 from src.bot.utils.template_engine import render_template
 from src.gorzdrav_api.exceptions import GorZdravError
 
-router = Router()
+ROUTER_NAME = "gorzdrav_errors"
+
+router = Router(name=ROUTER_NAME)
 
 
 @router.error(ExceptionTypeFilter(GorZdravError))
@@ -19,5 +21,8 @@ async def server_error_handler(
     exception = cast(GorZdravError, event.exception)
     await bot.send_message(
         chat_id=event_from_user.id,
-        text=render_template("errors/api_error.html", error_msg=exception.message)
+        text=render_template(
+            "errors/api_error.html",
+            error_msg=exception.message
+        )
     )

@@ -3,7 +3,7 @@ from aiogram_dialog import StartMode
 from aiogram_dialog.widgets.kbd import Start, SwitchTo
 from aiogram_dialog.widgets.text import Const
 
-from src.bot.logic.general.states import GeneralStates
+from src.bot.logic.dialogs.general.states import GeneralStates
 from src.bot.multimedia import keyboard_texts
 
 MENU_BTN_ID = "menu_btn"

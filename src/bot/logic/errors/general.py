@@ -6,9 +6,10 @@ from aiogram_dialog import DialogManager
 
 from src.database import Repository
 from src.database.models import UserModel
-from src.services.appointments_checker import StorageProxy
 
-router = Router()
+ROUTER_NAME = "general_errors"
+
+router = Router(name=ROUTER_NAME)
 
 
 @router.error(ExceptionTypeFilter(TelegramForbiddenError))
@@ -16,14 +17,12 @@ async def forbidden_error_handler(
         event: ErrorEvent,
         user: UserModel,
         repository: Repository,
-        storage_proxy: StorageProxy,
         dialog_manager: DialogManager
 ) -> None:
     """
     Handle error when user blocked bot. Delete user from DB and redis cache
     """
 
-    await storage_proxy.clear()
     await repository.user.delete(
         clause=UserModel.id == user.id
     )
