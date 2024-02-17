@@ -28,6 +28,11 @@ async def notify(
         callback_data: TrackingCallback,
         dialog_manager: DialogManager
 ) -> None:
+    await call.bot.edit_message_reply_markup(
+        chat_id=call.message.chat.id,
+        message_id=dialog_manager.current_stack().last_message_id
+    )
+
     await dialog_manager.start(
         TrackingStates.status,
         mode=StartMode.RESET_STACK,
